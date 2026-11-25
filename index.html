@@ -1,0 +1,2281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>智学阅卷 · 生物竞赛测评分析系统</title>
+<style>
+:root{
+  --pri:#1f6feb; --pri-d:#1a5cd0; --ok:#1a9e6c; --warn:#d97706; --bad:#dc2626;
+  --bg:#f2f5fa; --card:#ffffff; --line:#e3e8f0; --tx:#1c2434; --tx2:#5b6b83;
+  --side:#0f1c33; --side2:#16294a; --r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:14px}
+a{color:var(--pri);text-decoration:none}
+button{font-family:inherit}
+.btn{display:inline-block;border:0;border-radius:8px;padding:8px 16px;font-size:14px;cursor:pointer;background:var(--pri);color:#fff;transition:.15s}
+.btn:hover{background:var(--pri-d)}
+.btn.ghost{background:#fff;color:var(--pri);border:1px solid var(--pri)}
+.btn.ghost:hover{background:#eaf1fe}
+.btn.gray{background:#eef1f6;color:var(--tx2)}
+.btn.gray:hover{background:#e2e7ef}
+.btn.red{background:#fff;color:var(--bad);border:1px solid #f3b4b4}
+.btn.red:hover{background:#fdeaea}
+.btn.sm{padding:4px 10px;font-size:12px;border-radius:6px}
+input,select,textarea{font-family:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff;color:var(--tx);outline:none;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--pri)}
+label{display:block;font-size:12px;color:var(--tx2);margin:10px 0 4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:16px}
+.card h3{font-size:15px;margin-bottom:12px}
+.row{display:flex;gap:14px;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f4f7fc;color:var(--tx2);font-weight:600;text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+td{padding:9px 10px;border-bottom:1px solid #eef2f8}
+tr:hover td{background:#f8faff}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px}
+.tag.blue{background:#e8f0fe;color:var(--pri)}
+.tag.green{background:#e6f7f0;color:var(--ok)}
+.tag.orange{background:#fef3e2;color:var(--warn)}
+.tag.red{background:#fdeaea;color:var(--bad)}
+.tag.gray{background:#eef1f6;color:var(--tx2)}
+.muted{color:var(--tx2)}
+.small{font-size:12px}
+hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+/* ---- 登录页 ---- */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+ background:linear-gradient(135deg,#0f1c33 0%,#17325e 55%,#1f6feb 130%)}
+.login-box{width:760px;max-width:96vw;background:#fff;border-radius:18px;overflow:hidden;display:flex;min-height:440px;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.login-left{flex:1;background:linear-gradient(160deg,#122340,#1a3a6b);color:#fff;padding:38px 30px;display:flex;flex-direction:column;justify-content:space-between}
+.login-left h1{font-size:24px;line-height:1.4}
+.login-left p{color:#a9bedd;font-size:13px;line-height:1.9;margin-top:12px}
+.login-right{flex:1;padding:34px 34px 26px}
+.role-tabs{display:flex;gap:8px;margin-bottom:6px}
+.role-tabs button{flex:1;padding:9px 0;border:1px solid var(--line);background:#fff;border-radius:9px;cursor:pointer;font-size:14px;color:var(--tx2)}
+.role-tabs button.on{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:600}
+.demo{background:#f4f7fc;border-radius:9px;padding:10px 12px;font-size:12px;color:var(--tx2);line-height:1.8;margin-top:16px}
+/* ---- 主框架 ---- */
+.shell{display:flex;min-height:100vh}
+.side{width:212px;background:var(--side);color:#c6d4ec;padding:0 0 20px;flex-shrink:0}
+.logo{padding:20px 18px 14px;border-bottom:1px solid #1d3055}
+.logo b{color:#fff;font-size:16px;display:block}
+.logo span{font-size:11px;color:#7e94bb}
+.menu{margin-top:10px}
+.menu a{display:flex;align-items:center;gap:9px;padding:11px 18px;color:#c6d4ec;cursor:pointer;font-size:14px;border-left:3px solid transparent}
+.menu a:hover{background:var(--side2);color:#fff}
+.menu a.on{background:var(--side2);color:#fff;border-left-color:#4d94ff;font-weight:600}
+.main{flex:1;padding:22px 26px;min-width:0}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.topbar h2{font-size:19px}
+.userbox{display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.stat{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.stat b{font-size:24px;display:block}
+.stat span{font-size:12px;color:var(--tx2)}
+.kpi-green{color:var(--ok)} .kpi-blue{color:var(--pri)} .kpi-orange{color:var(--warn)} .kpi-red{color:var(--bad)}
+.bar{height:8px;background:#eef2f8;border-radius:6px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--pri);border-radius:6px}
+canvas{max-width:100%}
+#toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:99;display:flex;flex-direction:column;gap:8px;align-items:center}
+#toast div{background:#101828;color:#fff;padding:9px 18px;border-radius:9px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.pill{display:inline-block;background:#eef2f8;border-radius:7px;padding:3px 9px;font-size:12px;margin:2px 4px 2px 0;color:var(--tx2)}
+.filetag{display:flex;align-items:center;justify-content:space-between;border:1px dashed var(--line);border-radius:8px;padding:7px 10px;margin-top:6px;font-size:12px}
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:14px;flex-wrap:wrap}
+.tabs button{border:0;background:none;padding:9px 14px;cursor:pointer;font-size:14px;color:var(--tx2);border-bottom:2px solid transparent}
+.tabs button.on{color:var(--pri);border-bottom-color:var(--pri);font-weight:600}
+.empty{padding:40px;text-align:center;color:var(--tx2)}
+@media (max-width:900px){.login-box{flex-direction:column}.grid2,.grid3,.grid4{grid-template-columns:1fr}.side{width:64px}.side .logo b,.side .logo span,.side .menu a .mtxt{display:none}}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+<div id="app"></div>
+<script>
+/* ==================================================================
+   智学阅卷 · 生物竞赛测评分析系统（单文件版）
+   三端：管理员 / 教师 / 学生；数据存于浏览器 localStorage
+   资料库：内置 12 本教材知识点结构（对应上传 PDF）
+================================================================== */
+
+/* ---------------- 1. 教材知识点资料库 ---------------- */
+const KB = [
+ {id:'t1',title:'基础生态学（第4版·牛翠娟等）',short:'生态学',file:'基础生态学. 4版 - 牛翠娟 等.pdf',chapters:[
+  {name:'绪论与个体生态',kps:['生态学基本概念','环境与生态因子','生物适应与生态幅']},
+  {name:'种群生态',kps:['种群基本特征','种群增长模型','种间关系','种群调节']},
+  {name:'群落生态',kps:['群落结构与组成','群落演替','物种多样性指数']},
+  {name:'生态系统',kps:['能量流动','物质循环','食物链与食物网']},
+  {name:'应用生态',kps:['污染生态','生物多样性保护']} ]},
+ {id:'t2',title:'普通动物学（第4版·刘凌云等）',short:'动物学',file:'普通动物学. 4版 - 刘凌云 等.pdf',chapters:[
+  {name:'无脊椎动物',kps:['原生动物门','腔肠动物门','扁形动物门','线形动物门','环节动物门','软体动物门','节肢动物门','棘皮动物门']},
+  {name:'脊索动物',kps:['脊索动物门概述','鱼类','两栖纲','爬行纲','鸟纲','哺乳纲']},
+  {name:'动物进化',kps:['动物演化与系统发育','动物地理分布']} ]},
+ {id:'t3',title:'生理学（第10版·罗自强等）',short:'生理学',file:'生理学. 10版 - 罗自强 等.pdf',chapters:[
+  {name:'细胞基本功能',kps:['细胞膜物质转运','生物电现象','肌肉收缩']},
+  {name:'血液与循环',kps:['血液生理','心脏泵血','心肌生物电','血管生理与血压']},
+  {name:'呼吸与消化',kps:['肺通气与气体交换','呼吸调节','消化与吸收']},
+  {name:'代谢与排泄',kps:['能量代谢与体温','尿的生成与排出']},
+  {name:'调节系统',kps:['感觉器官','神经系统','内分泌与激素','生殖生理']} ]},
+ {id:'t4',title:'生物化学原理（第4版·杨荣武）',short:'生物化学',file:'生物化学原理. 4版 - 杨荣武.pdf',chapters:[
+  {name:'生物分子化学',kps:['糖类化学','脂质与生物膜','氨基酸与蛋白质结构','核苷酸与核酸结构','酶与维生素']},
+  {name:'生物氧化与代谢',kps:['生物氧化与呼吸链','糖代谢','脂质代谢','氨基酸代谢','核苷酸代谢','代谢调控']},
+  {name:'遗传信息传递',kps:['DNA的生物合成','RNA的生物合成','蛋白质的生物合成']} ]},
+ {id:'t5',title:'微生物学教程（第4版·周德庆）',short:'微生物学',file:'微生物学教程. 4版 - 周德庆.pdf',chapters:[
+  {name:'微生物类群',kps:['细菌','放线菌','真核微生物','病毒与亚病毒']},
+  {name:'营养与代谢',kps:['微生物营养与培养基','微生物代谢','微生物的生长与控制']},
+  {name:'遗传与应用',kps:['微生物遗传与育种','传染与免疫','微生物分类与鉴定']} ]},
+ {id:'t6',title:'细胞生物学（第5版·丁明孝等）',short:'细胞生物学',file:'细胞生物学. 5版 - 丁明孝 等.pdf',chapters:[
+  {name:'细胞结构与膜系统',kps:['细胞生物学研究方法','细胞膜与物质运输','细胞连接与细胞外基质','内膜系统与蛋白质分选']},
+  {name:'能量与骨架',kps:['线粒体与能量转换','核糖体','细胞骨架']},
+  {name:'细胞生命活动',kps:['细胞核与染色质','细胞周期与细胞分裂','细胞分化/衰老与凋亡','细胞信号转导']} ]},
+ {id:'t7',title:'现代分子生物学（第5版·朱玉贤等）',short:'分子生物学',file:'现代分子生物学. 5版 - 朱玉贤 等.pdf',chapters:[
+  {name:'遗传信息基础',kps:['染色体与DNA结构','DNA复制与修复']},
+  {name:'基因表达',kps:['转录','翻译与遗传密码','原核基因表达调控','真核基因表达调控']},
+  {name:'前沿与方法',kps:['分子生物学研究法','基因组与后基因组学']} ]},
+ {id:'t8',title:'遗传学（第3版·戴灼华 / 第4版·刘祖洞）',short:'遗传学',file:'遗传学. 3版 - 戴灼华 等.pdf',chapters:[
+  {name:'经典遗传',kps:['遗传的细胞学基础','孟德尔遗传定律','连锁互换与基因定位','性别决定与伴性遗传']},
+  {name:'扩展遗传',kps:['数量性状遗传','群体遗传与进化','细菌与噬菌体遗传','细胞质遗传']},
+  {name:'分子遗传',kps:['基因突变与重组','遗传的分子基础','基因工程']} ]},
+ {id:'t9',title:'植物生理学（第3版·武维华）',short:'植物生理',file:'植物生理学. 3版 - 武维华.pdf',chapters:[
+  {name:'物质与能量代谢',kps:['植物水分生理','矿质营养','光合作用','呼吸作用','同化物运输与分配']},
+  {name:'生长发育调控',kps:['植物生长物质','光形态建成','生长生理','生殖生理','成熟与衰老','抗性生理']} ]},
+ {id:'t10',title:'植物学·上册（第2版·陆时万等）',short:'植物学(上)',file:'植物学：上. 2版 - 陆时万 等.pdf',chapters:[
+  {name:'植物体结构基础',kps:['植物细胞','植物组织','种子与幼苗']},
+  {name:'营养器官',kps:['根的形态与结构','茎的形态与结构','叶的形态与结构','营养器官的变态与联系']} ]},
+ {id:'t11',title:'植物学·下册（第2版·吴国芳等）',short:'植物学(下)',file:'植物学：下. 2版 - 吴国芳 等.pdf',chapters:[
+  {name:'低等植物',kps:['藻类植物','菌类植物','地衣植物']},
+  {name:'高等植物',kps:['苔藓植物','蕨类植物','裸子植物']},
+  {name:'被子植物',kps:['被子植物营养器官','被子植物生殖器官','植物分类系统与演化']} ]}
+];
+/* 展平知识点 */
+const KPS=[];
+KB.forEach(b=>b.chapters.forEach((c,ci)=>c.kps.forEach(k=>KPS.push({id:'k'+(KPS.length+1),text:k,book:b,chapter:c.name}))));
+const KP=id=>KPS.find(k=>k.id===id);
+const kpLabel=id=>{const k=KP(id);return k?('《'+k.book.short+'》· '+k.chapter+' · '+k.text):'未关联知识点'};
+const kpSafe=id=>KP(id)||{text:'未关联知识点',chapter:'—',book:{short:'—',title:'—'}};
+
+/* ---------------- 2. 数据层 ---------------- */
+const SKEY='zhixue_v1';
+let db=null, me=null, page='dash', ctx={};
+const uid=()=>'id'+Math.random().toString(36).slice(2,10);
+function save(){localStorage.setItem(SKEY,JSON.stringify(db))}
+function migrateFiles(d){(d.exams||[]).forEach(e=>{const f=e.files||{};e.files={template:f.template||f.paper||[],sheetTmpl:f.sheetTmpl||f.sheet||[],answer:f.answer||[],analysis:f.analysis||[],sheetStu:f.sheetStu||[]}})}
+function load(){try{db=JSON.parse(localStorage.getItem(SKEY))}catch(e){db=null} if(!db){db=seed()} migrateFiles(db);save()}
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(msg){const t=document.getElementById('toast');const d=document.createElement('div');d.textContent=msg;t.appendChild(d);setTimeout(()=>d.remove(),2400)}
+const pct=x=>Math.round(x*10)/10+'%';
+function seed(){
+  const d={schools:[],users:[],invites:[],exams:[]};
+  const mkSchool=(name,grades)=>{const s={id:uid(),name,grades:[]};grades.forEach(g=>{const gg={id:uid(),name:g,classes:[]};s.grades.push(gg);return gg});return s};
+  const s1=mkSchool('汇智启航示范中学',['高一','高二']);const s2=mkSchool('示范第二中学',['高一']);
+  const g1a=s1.grades[0],g2a=s1.grades[1],g1b=s2.grades[0];
+  const c1={id:uid(),name:'1班'},c2={id:uid(),name:'2班'},c3={id:uid(),name:'1班'};
+  g1a.classes.push(c1,c2);g1b.classes.push(c3);
+  d.schools.push(s1,s2);
+  d.users.push({id:uid(),role:'admin',username:'admin',password:'admin123',name:'系统管理员'});
+  d.users.push({id:uid(),role:'teacher',username:'teacher1',password:'123456',name:'安老师',schoolId:s1.id,gradeId:g1a.id,classId:c1.id});
+  d.users.push({id:uid(),role:'teacher',username:'teacher2',password:'123456',name:'周老师',schoolId:s2.id,gradeId:g1b.id,classId:c3.id});
+  const names1=['陈嘉禾','林思远','王雨桐','赵子墨','李昕悦','周柏霖','吴语汐','郑皓然','孙梦洁','何景行'];
+  const names2=['冯若曦','杜天佑','曹静怡','袁子轩','邓晓萌','许泽楷'];
+  const names3=['沈书瑶','罗一鸣','高芷晴','梁浩宇','宋雨欣','唐文博'];
+  const mkStu=(arr,base,s,g,c,noStart)=>arr.forEach((nm,i)=>d.users.push({id:uid(),role:'student',username:'s'+(base+i),password:'123456',name:nm,schoolId:s.id,gradeId:g.id,classId:c.id,studentNo:String(noStart+i)}));
+  mkStu(names1,2501,s1,g1a,c1,2501);mkStu(names2,2601,s1,g1a,c2,2601);mkStu(names3,2701,s2,g1b,c3,2701);
+  const codes=['T2026A1','T2026A2','S2026A1','S2026A2','T2026B1','S2026B1'];
+  [['T2026A1','teacher',s1,g1a,c1],['T2026A2','teacher',s1,g1a,c2],['S2026A1','student',s1,g1a,c1],['S2026A2','student',s1,g1a,c2],['T2026B1','teacher',s2,g1b,c3],['S2026B1','student',s2,g1b,c3]]
+   .forEach(([code,role,s,g,c])=>d.invites.push({code,role,schoolId:s.id,gradeId:g.id,classId:c.id,createdBy:'admin',usedBy:null}));
+  const kp=ids=>ids.map(id=>KP(id).id);
+  const qsets={
+   e1:{title:'生物竞赛摸底测试卷',subject:'生物竞赛',date:'2026-11-05',kps:['线粒体与能量转换','细胞信号转导','酶与维生素','糖代谢','孟德尔遗传定律','连锁互换与基因定位','心脏泵血','光合作用'],scores:[12,12,12,13,13,13,12,13]},
+   e2:{title:'遗传专题强化测验',subject:'生物竞赛',date:'2026-11-15',kps:['孟德尔遗传定律','连锁互换与基因定位','数量性状遗传','群体遗传与进化','基因突变与重组','性别决定与伴性遗传'],scores:[18,18,16,16,16,16]},
+   e3:{title:'生物学基础检测卷',subject:'生物',date:'2026-11-18',kps:['细胞膜与物质运输','生物电现象','光合作用','DNA复制与修复','物质循环','种群增长模型'],scores:[18,16,17,17,16,16]}
+  };
+  const kpByName=n=>{const k=KPS.find(x=>x.text===n);return k?k.id:KPS[0].id};
+  const mkExam=(key,cls,tid,s,g)=>{const cfg=qsets[key];
+    const ex={id:uid(),title:cfg.title,subject:cfg.subject,date:cfg.date,teacherId:tid,schoolId:s.id,gradeId:g.id,classId:cls.id,
+      files:{template:[{name:'空白试卷-扫描件.jpg',type:'image/jpeg',size:220000}],sheetTmpl:[{name:'空白答题卡-模板.pdf',type:'file',size:90000}],answer:[{name:'带答案答题卡.docx',type:'file',size:45000}],analysis:[{name:'试题解析.docx',type:'file',size:60000}],sheetStu:[{name:'学生答题卡-扫描件.jpg',type:'image/jpeg',size:280000,preview:'data:image/jpeg;base64,/9j/4AAQ'}]},
+      questions:cfg.kps.map((n,i)=>({no:i+1,score:cfg.scores[i],kpId:kpByName(n)})),scores:{}};
+    d.exams.push(ex);return ex};
+  const t1=d.users.find(u=>u.username==='teacher1'),t2=d.users.find(u=>u.username==='teacher2');
+  mkExam('e1',c1,t1.id,s1,g1a);mkExam('e2',c2,t1.id,s1,g1a);mkExam('e3',c3,t2.id,s2,g1b);
+  const mkScores=(ex,stuIds)=>{stuIds.forEach(sid=>{const rec={};let tot=0;
+    ex.questions.forEach(q=>{const r=Math.random();let f=r<.15?0:(r<.35?0.5:(r<.85?0.85:1));let v=Math.round(q.score*f);rec[q.no]=v;tot+=v});
+    ex.scores[sid]={q:rec,total:tot}})};
+  mkScores(d.exams[0],d.users.filter(u=>u.role==='student'&&u.classId===c1.id).map(u=>u.id));
+  mkScores(d.exams[1],d.users.filter(u=>u.role==='student'&&u.classId===c2.id).map(u=>u.id));
+  mkScores(d.exams[2],d.users.filter(u=>u.role==='student'&&u.classId===c3.id).map(u=>u.id));
+  return d;
+}
+
+/* ---------------- 3. 通用查询 ---------------- */
+const uById=id=>db.users.find(u=>u.id===id);
+const schById=id=>db.schools.find(s=>s.id===id);
+const schoolName=id=>{const s=schById(id);return s?s.name:'—'};
+const gradeOf=(sid,gid)=>{const s=schById(sid);const g=s&&s.grades.find(x=>x.id===gid);return g?g.name:'—'};
+const classOf=(sid,gid,cid)=>{const g=(()=>{const s=schById(sid);return s&&s.grades.find(x=>x.id===gid)})();const c=g&&g.classes.find(x=>x.id===cid);return c?c.name:'—'};
+const clsLabel=u=>u&&u.schoolId?(schoolName(u.schoolId)+' · '+gradeOf(u.schoolId,u.gradeId)+' '+classOf(u.schoolId,u.gradeId,u.classId)):'未分配';
+const roleCN={admin:'管理员',teacher:'教师',student:'学生'};
+const teachers=()=>db.users.filter(u=>u.role==='teacher');
+const students=()=>db.users.filter(u=>u.role==='student');
+const examsOfTeacher=t=>t.schoolId?examsOfClass(t.schoolId,t.gradeId,t.classId):db.exams.filter(e=>e.teacherId===t.id);
+const examsOfClass=(sid,gid,cid)=>db.exams.filter(e=>e.schoolId===sid&&e.gradeId===gid&&e.classId===cid);
+
+/* ---------------- 4. 分析引擎 ---------------- */
+function computeExam(ex){
+  const stu=students().filter(u=>u.schoolId===ex.schoolId&&u.gradeId===ex.gradeId&&u.classId===ex.classId);
+  const rows=stu.map(u=>{const s=ex.scores[u.id];const perQ=ex.questions.map(q=>({q,kp:KP(q.kpId),got:s?s.q[q.no]:null}));
+    const wrong=s&&ex.questions.filter(q=>s.q[q.no]<q.score).map(q=>q);
+    return {u,s:s?s.total:null,perQ,wrong:s?wrong:null}});
+  const done=rows.filter(r=>r.s!=null);
+  const sorted=[...done].sort((a,b)=>b.s-a.s);
+  rows.forEach(r=>{if(r.s!=null){r.rank=sorted.findIndex(x=>x.u.id===r.u.id)+1}else r.rank=null});
+  const tot=ex.questions.reduce((a,q)=>a+q.score,0);
+  const stats={n:done.length,avg:done.length?done.reduce((a,r)=>a+r.s,0)/done.length:0,
+    max:done.length?Math.max(...done.map(r=>r.s)):0,min:done.length?Math.min(...done.map(r=>r.s)):0,total:tot,
+    full:done.filter(r=>r.s>=tot*0.9).length,low:done.filter(r=>r.s<tot*0.6).length};
+  const qAcc=ex.questions.map(q=>{const recs=done.map(r=>r.s&&ex.scores[r.u.id].q[q.no]).filter(v=>v!=null&&isFinite(v));
+    const got=recs.reduce((a,b)=>a+b,0);const maxGot=recs.length*q.score;
+    const acc=maxGot?Math.max(0,Math.min(1,got/maxGot)):0;
+    return {q,acc,errRate:maxGot?1-acc:0,avg:recs.length?got/recs.length:0}});
+  const kpMap={};
+  qAcc.forEach(a=>{const id=a.q.kpId;if(!kpMap[id])kpMap[id]={kp:KP(id),scoreGot:0,scoreAll:0};
+    kpMap[id].scoreGot+=a.avg*a.q.score? a.avg*a.q.score:0; kpMap[id].scoreAll+=a.q.score});
+  Object.values(kpMap).forEach(o=>{o.acc=o.scoreAll?Math.min(1,o.scoreGot/o.scoreAll):0});
+  const kpAcc=Object.values(kpMap).sort((a,b)=>a.acc-b.acc);
+  const dist=[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]; // <50,50-60,60-70,70-80,80-90,>=90 百分比段
+  done.forEach(r=>{const p=r.s/tot*100;const i=p<50?0:p<60?1:p<70?2:p<80?3:p<90?4:5;dist[i][1]++});
+  return {rows,done,stats,qAcc,kpAcc,dist,tot};
+}
+function suggestionFor(kpId,rate){ // rate=该生该题失分率
+  const kp=KP(kpId);
+  if(!kp)return '本题考点资料暂缺，建议核对试卷知识点设置，并结合教材对应章节复习。';
+  const advice=rate>=0.5?'该知识点失分严重，属于明显短板':'该知识点存在失分，建议查漏补缺';
+  return '本题考查'+kpLabel(kp.id)+'。'+advice+'。建议：①重读《'+kp.book.title+'》中“'+kp.chapter+'”一章对应内容；②整理该考点错题并完成3–5道专项练习；③一周后自测同类题目，检验掌握情况。';
+}
+function libRefsFor(kpId){ // 上传资料与考点关联：同书目优先，其次全文含考点名/章节名（错题解析铺垫）
+  const kp=KP(kpId);if(!kp||!(db.libFiles||[]).length)return [];
+  const bi=KB.findIndex(b=>b.short===kp.book.short||b.title===kp.book.title);
+  const out=[];
+  db.libFiles.forEach(f=>{
+    let hit=null;
+    if(bi>=0&&f.bookId!==''&&KB[+f.bookId]&&+f.bookId===bi)hit='同书目《'+KB[bi].title+'》';
+    else if(f.text&&(f.text.indexOf(kp.text)>=0||(kp.chapter&&kp.chapter!=='—'&&f.text.indexOf(kp.chapter)>=0)))hit='内容匹配「'+kp.text+'」';
+    if(hit)out.push({f,hit});
+  });
+  return out.slice(0,3);
+}
+function libRefsHtml(kpId){ // 解析末尾追加「📎 相关上传资料」
+  const rs=libRefsFor(kpId);
+  if(!rs.length)return '';
+  return '<p class="small" style="line-height:1.8"><b>📎 相关上传资料：</b>'+rs.map(r=>'<span class="pill" title="'+esc(r.hit)+'">'+esc(r.f.name)+'</span>').join(' ')+'（可到「📚 资料库」展开查看摘录）</p>';
+}
+function studentReport(ex,row){
+  const r=row;const tot=ex.questions.reduce((a,q)=>a+q.score,0);
+  const per= tot?Math.round(row.s/tot*1000)/10:0; // 得分率%
+  const kpLost={};
+  r.wrong.forEach(q=>{const lost=q.score-(ex.scores[r.u.id].q[q.no]);const k=q.kpId;
+    if(!kpLost[k])kpLost[k]={kp:KP(k),lost:0,items:[]};kpLost[k].lost+=lost;
+    kpLost[k].items.push({q,got:ex.scores[r.u.id].q[q.no],rate:lost/q.score})});
+  const weak=Object.values(kpLost).sort((a,b)=>b.lost-a.lost);
+  const strong=(()=>{const m={};r.perQ.forEach(p=>{if(p.got===p.q.score){const k=p.q.kpId;if(!m[k])m[k]={kp:KP(k),n:0};m[k].n++}});
+    return Object.values(m).sort((a,b)=>b.n-a.n)})();
+  let level,comment;
+  if(per>=85){level='优秀';comment='整体掌握扎实，继续保持解题规范与时间分配。'}
+  else if(per>=75){level='良好';comment='基础较稳，重点攻克中档综合题与失分知识点。'}
+  else if(per>=60){level='合格';comment='基础有漏洞，建议按薄弱知识点优先级逐个补齐，加强教材回归。'}
+  else{level='待提高';comment='当前失分面较大，建议先回归教材基础章节，建立知识框架后再刷题。'}
+  return {per,level,comment,weak,strong,rank:r.rank,total:students().filter(u=>u.classId===ex.classId).length};
+}
+
+/* ---------------- 5. 通用 UI 组件 ---------------- */
+function barChart(cv,labels,values,opts){opts=opts||{};const dpr=window.devicePixelRatio||1;
+  const lbW=lb=>[...String(lb)].reduce((a,ch)=>a+(ch.charCodeAt(0)>255?11.5:6.5),0); // 估算标签像素宽（中文≈11.5px，英文数字≈6.5px）
+  const slot0=opts.barW||26;
+  const needRot=opts.rotate||labels.some(lb=>lbW(lb)>slot0*0.95); // 标签放不下自动斜排，避免挤成一团
+  const pad={l:38,r:8,t:16,b:needRot?62:34};
+  const n=labels.length;if(!n)return;
+  const slot=slot0; // 每根柱子的固定横向空间：柱多时加宽画布并横向滚动，避免文字重叠
+  const cw=cv.clientWidth||cv.parentNode&&cv.parentNode.clientWidth||560;
+  const need=pad.l+pad.r+n*slot;const W=Math.max(cw||560,Math.min(need,2400)||need);const wide=W>=(cw||560)+4;
+  const H=opts.height||220;cv.width=W*dpr;cv.height=H*dpr;cv.style.height=H+'px';cv.style.width=W+'px';
+  cv.style.maxWidth='none'; // 全局canvas{max-width:100%}会把加宽画布压回卡片宽度，导致80根柱子挤成一团
+  if(wide&&cv.parentNode&&cv.parentNode.style){cv.parentNode.style.overflowX='auto'}
+  const g=cv.getContext('2d');g.scale(dpr,dpr);g.clearRect(0,0,W,H);
+  const max=opts.max!=null?opts.max:Math.max(...values,1)*1.15;
+  const bw=Math.min(46,slot*0.6);
+  g.strokeStyle='#e3e8f0';g.fillStyle='#5b6b83';g.font='11px sans-serif';
+  for(let i=0;i<=4;i++){const y=pad.t+(H-pad.t-pad.b)*i/4;g.beginPath();g.moveTo(pad.l,y);g.lineTo(W-pad.r,y);g.stroke();
+    g.textAlign='right';g.fillText((max*(1-i/4)).toFixed(opts.decimal||0),pad.l-5,y+4)}
+  const colors=opts.colors||[opts.color||'#1f6feb'];
+  const skipX=Math.ceil(20/slot); // 横向空间不足时隔一个画一个题号
+  labels.forEach((lb,i)=>{const v=values[i];if(!isFinite(v))return;const x=pad.l+(W-pad.l-pad.r)*(i+0.5)/n-bw/2;
+    const h=Math.max(0,Math.min(H-pad.t-pad.b,(H-pad.t-pad.b)*v/max));const y=H-pad.b-h;
+    g.fillStyle=colors[i%colors.length];g.beginPath();
+    if(g.roundRect){g.roundRect(x,y,bw,h,[4,4,0,0]);g.fill()}else{g.fillRect(x,y,bw,h)}
+    g.fillStyle='#1c2434';g.textAlign='center';g.font='11px sans-serif';
+    if(slot>=30)g.fillText((opts.fmt?opts.fmt(v):v),x+bw/2,y-4); // 空间够才画数值，避免互相压盖
+    const cx=x+bw/2;g.fillStyle='#5b6b83';
+    if(needRot){ // 长标签：斜排
+      const txt=lb.length>10?lb.slice(0,9)+'…':lb;
+      g.save();g.translate(cx,H-pad.b+6);g.rotate(-Math.PI/5);g.textAlign='right';g.fillText(txt,0,10);g.restore()}
+    else if(i%skipX===0)g.fillText(lb.length>7?lb.slice(0,6)+'…':lb,cx,H-pad.b+14)});
+}
+function drawDist(cv,dist){barChart(cv,['<50%','50-60%','60-70%','70-80%','80-90%','≥90%'],dist.map(d=>d[1]),{color:'#1a9e6c',max:Math.max(...dist.map(d=>d[1]),4)})}
+function htmlTable(head,rows){return '<div style="overflow-x:auto"><table><thead><tr>'+head.map(h=>'<th'+(h[1]?' class="num"':'')+'>'+h[0]+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map((c,i)=>'<td'+(head[i]&&head[i][1]?' class="num"':'')+'>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>'}
+function selectSchoolTree(prefix,pre){ // 三个下拉，pre={schoolId,gradeId,classId}
+  const s=schById(pre.schoolId)||db.schools[0];
+  const g=s?(s.grades.find(x=>x.id===pre.gradeId)||s.grades[0]):null;
+  const c=g?(g.classes.find(x=>x.id===pre.classId)||g.classes[0]):null;
+  const sOpts=db.schools.map(x=>'<option value="'+x.id+'"'+(s&&s.id===x.id?' selected':'')+'>'+esc(x.name)+'</option>').join('');
+  const gOpts=s?s.grades.map(x=>'<option value="'+x.id+'"'+(g&&g.id===x.id?' selected':'')+'>'+esc(x.name)+'</option>').join(''):'';
+  const cOpts=g?g.classes.map(x=>'<option value="'+x.id+'"'+(c&&c.id===x.id?' selected':'')+'>'+esc(x.name)+'</option>').join(''):'';
+  return '<div class="row"><div style="flex:1;min-width:120px"><label>学校</label><select id="'+prefix+'-s" onchange="onTreeChange(\''+prefix+'\')">'+(sOpts||'<option value="">（暂无学校）</option>')+'</select></div>'+
+  '<div style="flex:1;min-width:120px"><label>年级</label><select id="'+prefix+'-g" onchange="onTreeChange(\''+prefix+'\')">'+(gOpts||'<option value="">—</option>')+'</select></div>'+
+  '<div style="flex:1;min-width:120px"><label>班级</label><select id="'+prefix+'-c">'+(cOpts||'<option value="">—</option>')+'</select></div></div>';
+}
+function treeValSafe(prefix){try{const v=treeVal(prefix);return v&&v.schoolId?v:{}}catch(e){return {}}}
+function treeVal(prefix){return {schoolId:document.getElementById(prefix+'-s').value,gradeId:document.getElementById(prefix+'-g').value,classId:document.getElementById(prefix+'-c').value}}
+function onTreeChange(prefix){const v=treeVal(prefix);const holder=ctx['tree_'+prefix]||{};
+  if(holder.onOk){renderTreeInto(prefix,{schoolId:v.schoolId,gradeId:v.gradeId,classId:null},holder.onOk)}
+  else{const host=document.getElementById(prefix+'-host');if(host)host.innerHTML=selectSchoolTree(prefix,{schoolId:v.schoolId,gradeId:v.gradeId})}
+}
+function renderTreeInto(prefix,pre,onOk){ctx['tree_'+prefix]={onOk};const host=document.getElementById(prefix+'-host');if(host)host.innerHTML=selectSchoolTree(prefix,pre)+'<div style="margin-top:10px"><button class="btn sm" onclick="ctx[\'tree_'+prefix+'\'].onOk()">确定</button></div>'}
+
+/* ---------------- 6. 登录 / 注册 ---------------- */
+let loginRole='admin',regMode=false,regPre={};
+function renderLogin(){
+  const demo='<div class="demo"><b>演示账号</b>（首次打开已内置示例学校/班级/成绩，可先体验再注册）<br>管理员：admin / admin123　　教师：teacher1 / 123456　　学生：s2501 / 123456</div>';
+  const regFields= loginRole==='admin'?'':
+    '<label>账号</label><input id="r-username" placeholder="用户名（登录用）">'+
+    '<label>密码</label><input id="r-pwd" type="password" placeholder="设置密码">'+
+    '<div id="reg-tree-host">'+selectSchoolTree('reg',{})+'</div><div id="reg-bindtip" class="small" style="color:var(--ok);margin-top:6px"></div>'+
+    '<label>'+(loginRole==='student'?'学号（必填）':'姓名')+'</label><input id="r-name" placeholder="'+(loginRole==='student'?'如：2508':'真实姓名')+'">'+
+    (loginRole==='teacher'?'':'<label>姓名</label><input id="r-realname" placeholder="真实姓名">')+
+    '<label>邀请码（由'+(loginRole==='teacher'?'管理员':'教师/管理员')+'发放，与账号绑定）</label><input id="r-code" placeholder="'+(loginRole==='teacher'?'如：T2026A1':'如：S2026A1')+'" onchange="checkRegCode()"><div id="code-tip" class="small muted" style="margin-top:4px"></div>';
+  document.getElementById('app').innerHTML=
+  '<div class="login-wrap"><div class="login-box">'+
+   '<div class="login-left"><div><h1>智学阅卷<br>生物竞赛测评分析系统</h1><p>以《基础生态学》《普通动物学》《生理学》《生物化学原理》《微生物学教程》《细胞生物学》《现代分子生物学》《遗传学》《植物生理学》《植物学》等 12 本教材构建知识点资料库，支撑试卷评判、错题解析与班级/学校多维分析。</p></div><p class="small" style="color:#7e94bb">管理员 › 教师 › 学生 · 三级权限体系</p></div>'+
+   '<div class="login-right">'+
+    '<div class="role-tabs">'+['admin','teacher','student'].map(r=>'<button class="'+(loginRole===r?'on':'')+'" onclick="loginRole=\''+r+'\';regMode=false;renderLogin()">'+roleCN[r]+'端</button>').join('')+'</div>'+
+    (regMode?
+     '<h3 style="margin:10px 0 0">'+roleCN[loginRole]+'端注册</h3>'+regFields+
+     '<div class="row" style="margin-top:14px"><button class="btn" style="flex:1" onclick="doRegister()">注册并绑定班级</button><button class="btn ghost" style="flex:1" onclick="regMode=false;renderLogin()">返回登录</button></div>'
+     :
+     '<h3 style="margin:10px 0 0">'+roleCN[loginRole]+'端登录</h3>'+
+     '<label>账号</label><input id="l-u" placeholder="用户名"><label>密码</label><input id="l-p" type="password" placeholder="密码" onkeydown="if(event.key===\'Enter\')doLogin()">'+
+     '<div class="row" style="margin-top:14px"><button class="btn" style="flex:1" onclick="doLogin()">登录</button>'+
+     (loginRole==='admin'?'':'<button class="btn ghost" style="flex:1" onclick="regMode=true;regPre={};renderLogin()">首次注册</button>')+'</div>'+
+     demo)+
+   '</div></div></div>';
+  if(regMode)syncRegSelects();
+}
+function selectSchoolTreeForReg(){return '<div id="reg-tree-host">'+selectSchoolTree('reg',{})+'</div><div id="reg-bindtip" class="small" style="color:var(--ok);margin-top:6px"></div>'}
+function syncRegSelects(){const host=document.getElementById('reg-tree-host');if(host){ctx['tree_reg']={onOk:()=>{}};host.innerHTML=selectSchoolTree('reg',regPre)}}
+function checkRegCode(){
+  const code=(document.getElementById('r-code').value||'').trim().toUpperCase();
+  const inv=db.invites.find(i=>i.code===code);
+  const tip=document.getElementById('code-tip');
+  if(!inv){tip.textContent='邀请码不存在，请核对后再试。';tip.style.color='var(--bad)';return}
+  if(inv.role!==loginRole){tip.textContent='该邀请码类型不符（此码为'+roleCN[inv.role]+'码）。';tip.style.color='var(--bad)';return}
+  if(inv.usedBy){tip.textContent='该邀请码已被使用，一人一码不可重复注册。';tip.style.color='var(--bad)';return}
+  tip.textContent='✓ 邀请码有效，已自动绑定：'+schoolName(inv.schoolId)+' · '+gradeOf(inv.schoolId,inv.gradeId)+' '+classOf(inv.schoolId,inv.gradeId,inv.classId);
+  tip.style.color='var(--ok)';
+  regPre={schoolId:inv.schoolId,gradeId:inv.gradeId,classId:inv.classId};
+  ctx['tree_reg']={onOk:()=>{}};document.getElementById('reg-tree-host').innerHTML=selectSchoolTree('reg',regPre);
+  document.getElementById('reg-bindtip').textContent='班级信息由邀请码自动绑定，无需手动修改。';
+}
+function doLogin(){
+  const u=(document.getElementById('l-u').value||'').trim(),p=document.getElementById('l-p').value||'';
+  const f=db.users.find(x=>x.username===u&&x.password===p&&x.role===loginRole);
+  if(!f){toast('账号或密码错误（注意当前为'+roleCN[loginRole]+'端）');return}
+  me=f;page='dash';renderApp();toast('欢迎，'+f.name+'（'+roleCN[f.role]+'端）');
+}
+function doRegister(){
+  const un=(document.getElementById('r-username').value||'').trim();
+  const pwd=(document.getElementById('r-pwd').value||'').trim();
+  const code=(document.getElementById('r-code').value||'').trim().toUpperCase();
+  const name=loginRole==='student'?(document.getElementById('r-realname').value||'').trim():(document.getElementById('r-name').value||'').trim();
+  const studentNo=loginRole==='student'?(document.getElementById('r-name').value||'').trim():'';
+  const inv=db.invites.find(i=>i.code===code);
+  if(!un||!pwd||!name){toast('请完整填写账号、密码、姓名');return}
+  if(loginRole==='student'&&!studentNo){toast('学生端必须填写学号');return}
+  if(!inv||inv.role!==loginRole||inv.usedBy){toast('邀请码无效或已被使用');return}
+  if(db.users.some(x=>x.username===un)){toast('用户名已存在');return}
+  const nu={id:uid(),role:loginRole,username:un,password:pwd,name:name,
+    schoolId:inv.schoolId,gradeId:inv.gradeId,classId:inv.classId};
+  if(loginRole==='student')nu.studentNo=studentNo;
+  db.users.push(nu);inv.usedBy=nu.id;inv.usedAt=new Date().toLocaleDateString();
+  save();toast('注册成功，已绑定班级，请登录');regMode=false;loginRole=loginRole;renderLogin();
+}
+
+/* ---------------- 7. 主框架 ---------------- */
+const MENUS={
+ admin:[['dash','📊 数据总览'],['org','🏫 学校·年级·班级'],['exam','📢 统一发布考试'],['report','🎓 学情报告分析'],['invites','🎫 邀请码管理'],['users','👥 师生账号管理'],['compare','📈 多校多班对比'],['lib','📚 教材资料库']],
+ teacher:[['dash','📋 我的考试'],['examnew','📝 发布考试/上传试卷'],['clsana','📊 班级情况分析'],['invites','🎫 学生邀请码'],['mystu','👥 我的学生'],['lib','📚 教材资料库']],
+ student:[['scores','🧾 我的成绩'],['review','📕 错题复盘'],['lib','📚 教材资料库']]};
+function renderApp(){
+  if(!me){renderLogin();return}
+  const menus=MENUS[me.role];
+  if(!menus.some(m=>m[0]===page))page='dash';
+  document.getElementById('app').innerHTML=
+  '<div class="shell"><div class="side"><div class="logo"><b>智学阅卷系统</b><span>'+roleCN[me.role]+'端</span></div><div class="menu">'+
+   menus.map(m=>'<a class="'+(page===m[0]?'on':'')+'" onclick="page=\''+m[0]+'\';renderApp()"><span class="mtxt">'+m[1]+'</span></a>').join('')+
+  '</div></div><div class="main"><div class="topbar"><h2>'+((menus.find(m=>m[0]===page)||['',''])[1].replace(/^[^\s]+\s/,''))+'</h2>'+
+  '<div class="userbox"><div class="avatar">'+esc(me.name[0])+'</div><div class="small"><b>'+esc(me.name)+'</b><br><span class="muted">'+roleCN[me.role]+' · '+clsLabel(me)+'</span></div>'+
+  '<button class="btn ghost sm" onclick="changePwd()">修改密码</button>'+
+  '<button class="btn gray sm" onclick="me=null;renderLogin()">退出</button></div></div><div id="view"></div></div></div>';
+  const V={dash:vDash,org:vOrg,exam:vPubExam,report:vReport,invites:vInvites,users:vUsers,compare:vCompare,lib:vLib,examnew:vExamNew,mystu:vMyStu,scores:vScores,review:vReview,clsana:vClsAna};
+  (V[page]||vDash)();
+}
+function title(t){return ''}
+function changePwd(){
+  const cur=prompt('【'+me.name+'】请输入当前密码：');if(cur==null)return;
+  if(cur!==me.password){toast('当前密码不正确');return}
+  const p=prompt('请输入新密码（至少 4 位）：');
+  if(p==null)return;if(p.trim().length<4){toast('新密码至少 4 位');return}
+  me.password=p.trim();save();toast('密码修改成功，请牢记新密码');
+}
+
+/* ---------------- 8. 管理员端 ---------------- */
+function vADash(){
+  const all=db.exams;const done=[];
+  const perClass=db.exams.map(e=>({e,a:computeExam(e)}));
+  const avgAll=perClass.length?Math.round(perClass.reduce((s,x)=>s+x.a.stats.avg,0)/perClass.length*10)/10:0;
+  const view=document.getElementById('view');
+  view.innerHTML=
+  '<div class="grid4">'+
+   '<div class="stat"><b class="kpi-blue">'+db.schools.length+'</b><span>学校数</span></div>'+
+   '<div class="stat"><b class="kpi-green">'+teachers().length+' / '+students().length+'</b><span>教师数 / 学生数</span></div>'+
+   '<div class="stat"><b class="kpi-orange">'+all.length+'</b><span>试卷（考试）总数</span></div>'+
+   '<div class="stat"><b class="kpi-red">'+db.invites.filter(i=>!i.usedBy).length+'</b><span>未使用邀请码</span></div></div>'+
+  '<div class="card" style="margin-top:16px"><h3>最新考试概况</h3>'+
+   (perClass.length?htmlTable([['考试'],['学校 · 班级'],['日期'],['参考人数',1],['平均分',1],['最高分',1],['及格率(<60%为不合格)',1]],
+    perClass.slice(-8).reverse().map(x=>[esc(x.e.title),clsLabel({schoolId:x.e.schoolId,gradeId:x.e.gradeId,classId:x.e.classId}),x.e.date,x.a.stats.n,
+      Math.round(x.a.stats.avg*10)/10,x.a.stats.max,pct(x.a.stats.n?x.a.done.filter(r=>r.s>=x.a.tot*0.6).length/x.a.stats.n*100:0)])):'<div class="empty">暂无考试</div>')+'</div>';
+}
+function vOrg(){
+  const view=document.getElementById('view');
+  view.innerHTML='<div class="grid2"><div class="card"><h3>➕ 构建学校 / 年级 / 班级框架</h3><div id="org-form"></div></div>'+
+  '<div class="card"><h3>🏫 框架总览（可删除空节点）</h3><div id="org-tree"></div></div></div>'+
+  '<div class="card"><h3>👨‍🏫 教师任教分配（将教师指派到班级）</h3><div id="org-assign"></div></div>';
+  orgForm();orgTree();orgAssign();
+}
+function orgForm(){
+  const og=treeValSafe('og'),oc=treeValSafe('oc');
+  const s0=schById(og.schoolId)||schById(oc.schoolId)||db.schools[0],g0=s0&&s0.grades[0];
+  const ocPre=schById(oc.schoolId)?{schoolId:oc.schoolId,gradeId:oc.gradeId,classId:oc.classId}:{schoolId:s0&&s0.id,gradeId:g0&&g0.id};
+  document.getElementById('org-form').innerHTML=
+  '<label>新建学校名称</label><div class="row"><input id="ns" placeholder="如：邯郸市第一中学"><button class="btn" onclick="addSchool()">创建学校</button></div>'+
+  '<label>在学校下新建年级</label><div id="og-host">'+selectSchoolTree('og',{schoolId:s0&&s0.id})+'</div><div class="row" style="margin-top:8px"><input id="ng" placeholder="如：高一"><button class="btn" onclick="addGrade()">创建年级</button></div>'+
+  '<label>在年级下新建班级</label><div id="oc-host">'+selectSchoolTree('oc',ocPre)+'</div><div class="row" style="margin-top:8px"><input id="nc" placeholder="如：3班"><button class="btn" onclick="addClass()">创建班级</button></div>';
+}
+function orgTree(){
+  document.getElementById('org-tree').innerHTML=db.schools.length?db.schools.map(s=>
+   '<div style="margin-bottom:10px"><b>🏫 '+esc(s.name)+'</b> <button class="btn gray sm" onclick="renameNode(\'school\',\''+s.id+'\')">✏️ 改名</button> <button class="btn red sm" onclick="delNode(\'school\',\''+s.id+'\')">删除</button>'+
+   s.grades.map(g=>'<div style="margin:6px 0 0 18px"><b>📕 '+esc(g.name)+'</b> <button class="btn gray sm" onclick="renameNode(\'grade\',\''+s.id+'\',\''+g.id+'\')">✏️ 改名</button> <button class="btn red sm" onclick="delNode(\'grade\',\''+s.id+'\',\''+g.id+'\')">删除</button>'+
+    '<span style="margin-left:14px">'+(g.classes.length?g.classes.map(c=>'<span class="pill">'+esc(c.name)+'（'+students().filter(u=>u.classId===c.id).length+'生 / '+teachers().filter(u=>u.classId===c.id).length+'师）<a style="cursor:pointer;color:var(--ok)" onclick="renameNode(\'class\',\''+s.id+'\',\''+g.id+'\',\''+c.id+'\')">改</a> <a style="cursor:pointer;color:var(--bad)" onclick="delNode(\'class\',\''+s.id+'\',\''+g.id+'\',\''+c.id+'\')">删</a></span>').join(''):'<span class="muted small">暂无班级</span>')+'</span></div>').join('')+'</div>').join(''):'<div class="empty">暂无学校，请先创建</div>';
+}
+function renameNode(type,sid,gid,cid){ // 学校/年级/班级改名（各处按 id 引用，改名后成绩与报告自动同步）
+  const s=schById(sid);if(!s)return;
+  let node,cur,label;
+  if(type==='school'){node=s;cur=s.name;label='学校'}
+  else if(type==='grade'){node=s.grades.find(x=>x.id===gid);cur=node&&node.name;label='年级'}
+  else{const g=s.grades.find(x=>x.id===gid);node=g&&g.classes.find(x=>x.id===cid);cur=node&&node.name;label='班级'}
+  if(!node)return;
+  const v=prompt('请输入新的'+label+'名称：',cur);
+  if(v==null)return;const nv=v.trim();
+  if(!nv)return toast('名称不能为空');
+  if(nv===cur)return toast('名称未变化');
+  node.name=nv;save();toast(label+'已改名为「'+nv+'」，相关成绩与报告自动同步');orgTree();orgAssign();orgForm();
+}
+function orgAssign(){
+  const ts=teachers();
+  document.getElementById('org-assign').innerHTML=ts.length?htmlTable([['教师'],['账号'],['当前任教班级'],['调整为（学校/年级/班级）'],[null]],
+   ts.map(t=>[esc(t.name),esc(t.username),clsLabel(t),
+    '<div id="asg-'+t.id+'">'+selectSchoolTreeInline(t)+'</div>',
+    '<button class="btn sm" onclick="saveAssign(\''+t.id+'\')">保存</button>'])):'<div class="empty">暂无教师</div>';
+}
+function selectSchoolTreeInline(t){
+  const s=db.schools.map(s=>'<option value="'+s.id+'"'+(t.schoolId===s.id?' selected':'')+'>'+esc(s.name)+'</option>').join('');
+  const g=(schById(t.schoolId)||{grades:[]}).grades.map(g=>'<option value="'+g.id+'"'+(t.gradeId===g.id?' selected':'')+'>'+esc(g.name)+'</option>').join('');
+  const cg=(((schById(t.schoolId)||{}).grades||[]).find(x=>x.id===t.gradeId)||{classes:[]}).classes.map(c=>'<option value="'+c.id+'"'+(t.classId===c.id?' selected':'')+'>'+esc(c.name)+'</option>').join('');
+  return '<div class="row"><select class="asg-s" data-t="'+t.id+'" onchange="asgChange(\''+t.id+'\')">'+s+'</select><select class="asg-g" data-t="'+t.id+'" onchange="asgChange(\''+t.id+'\')">'+g+'</select><select class="asg-c" data-t="'+t.id+'">'+cg+'</select></div>';
+}
+function asgChange(tid){const t=uById(tid);const sSel=document.querySelector('.asg-s[data-t="'+tid+'"]');
+  const gSel=document.querySelector('.asg-g[data-t="'+tid+'"]');
+  const s=schById(sSel.value);t.schoolId=s.id;
+  gSel.innerHTML=s.grades.map(g=>'<option value="'+g.id+'">'+esc(g.name)+'</option>').join('');
+  const cSel=document.querySelector('.asg-c[data-t="'+tid+'"]');
+  const g=s.grades.find(x=>x.id===gSel.value)||{classes:[]};
+  cSel.innerHTML=g.classes.map(c=>'<option value="'+c.id+'">'+esc(c.name)+'</option>').join('');}
+function saveAssign(tid){const t=uById(tid);
+  t.schoolId=document.querySelector('.asg-s[data-t="'+tid+'"]').value;
+  t.gradeId=document.querySelector('.asg-g[data-t="'+tid+'"]').value;
+  t.classId=document.querySelector('.asg-c[data-t="'+tid+'"]').value;
+  save();toast('已将 '+t.name+' 调整为：'+clsLabel(t));orgAssign();orgTree();}
+function addSchool(){const v=(document.getElementById('ns').value||'').trim();if(!v)return toast('请填写学校名');
+  db.schools.push({id:uid(),name:v,grades:[]});save();toast('学校创建成功');orgForm();orgTree();orgAssign()}
+function addGrade(){const v=treeVal('og');const nm=(document.getElementById('ng').value||'').trim();
+  const s=schById(v.schoolId);if(!s)return toast('请选择学校');if(!nm)return toast('请填写年级名');
+  s.grades.push({id:uid(),name:nm,classes:[]});save();toast('年级创建成功');orgForm();orgTree()}
+function addClass(){const v=treeVal('oc');const nm=(document.getElementById('nc').value||'').trim();
+  const s=schById(v.schoolId);const g=s&&s.grades.find(x=>x.id===v.gradeId);
+  if(!s||!g)return toast('请重新选择学校和年级');if(!nm)return toast('请填写班级名');
+  g.classes.push({id:uid(),name:nm});save();toast('班级创建成功：'+s.name+' '+nm);orgForm();orgTree();orgAssign()}
+function delNode(type,sid,gid,cid){if(!confirm('确认删除？删除前请确保节点下已无师生数据。'))return;
+  const s=schById(sid);if(!s)return;
+  if(type==='school'){if(teachers().some(t=>t.schoolId===sid)||students().some(u=>u.schoolId===sid)||db.exams.some(e=>e.schoolId===sid))return toast('该学校下仍有师生或考试，不能删除');
+    db.schools=db.schools.filter(x=>x.id!==sid)}
+  else if(type==='grade'){const g=s.grades.find(x=>x.id===gid);
+    if(teachers().some(t=>t.gradeId===gid)||students().some(u=>u.gradeId===gid))return toast('该年级下仍有师生，不能删除');
+    s.grades=s.grades.filter(x=>x.id!==gid)}
+  else{const g=s.grades.find(x=>x.id===gid);
+    if(teachers().some(t=>t.classId===cid)||students().some(u=>u.classId===cid)||db.exams.some(e=>e.classId===cid))return toast('该班级下仍有师生或考试，不能删除');
+    g.classes=g.classes.filter(x=>x.id!==cid)}
+  save();toast('已删除');vOrg()}
+function vPubExam(){
+  const view=document.getElementById('view');
+  view.innerHTML=
+  '<div class="card"><h3>📢 统一发布考试（可跨学校勾选多个班级）</h3>'+
+  '<div class="grid3"><div><label>考试名称</label><input id="pe-title" placeholder="如：2026 秋季生物联赛模拟"></div>'+
+  '<div><label>科目</label><select id="pe-subject"><option>生物竞赛</option><option>生物</option><option>化学竞赛</option><option>物理竞赛</option></select></div>'+
+  '<div><label>日期</label><input id="pe-date" type="date" value="'+new Date().toISOString().slice(0,10)+'"></div></div>'+
+  '<label style="margin-top:12px">选择目标班级（可多选，可跨学校）</label>'+
+  '<div class="row" style="margin-bottom:6px"><button class="btn gray sm" onclick="peCheck(true)">全选</button><button class="btn gray sm" onclick="peCheck(false)">清空</button></div>'+
+  '<div id="pe-cls">'+peClassList()+'</div>'+
+  '<button class="btn" style="margin-top:12px" onclick="publishExams()">🚀 发布考试</button>'+
+  '<p class="small muted" style="margin-top:6px">将在每个所选班级创建同一场考试：已分配教师的班级自动关联任课教师，其教师端「我的考试」立即可见，由该教师上传试卷、设置题目并录分；未分配教师的班级需先到「学校·年级·班级」分配教师。教师本人也可在其端内发布本校班级的考试。</p></div>'+
+  '<div class="card"><h3>📑 已发布考试总览</h3>'+
+  (db.exams.length?htmlTable([['考试'],['日期'],['学校 · 班级'],['任课教师'],['已录人数',1],['平均分',1]],
+   db.exams.slice().reverse().map(e=>{const a=computeExam(e);
+    return [esc(e.title),e.date,clsLabel({schoolId:e.schoolId,gradeId:e.gradeId,classId:e.classId}),
+     e.teacherId?esc((uById(e.teacherId)||{}).name||'—'):'<span class="muted">未分配</span>',
+     a.stats.n+'/'+students().filter(u=>u.classId===e.classId).length,Math.round(a.stats.avg*10)/10]})):'<div class="empty">暂无考试</div>')+'</div>';
+}
+function peClassList(){return db.schools.map(s=>'<div style="margin:8px 0"><b>🏫 '+esc(s.name)+'</b>'+
+  s.grades.map(g=>'<div style="margin:4px 0 0 16px"><b class="small">'+esc(g.name)+'</b> '+
+   g.classes.map(c=>'<label style="display:inline-flex;align-items:center;gap:4px;margin:2px 12px 2px 0;font-size:13px"><input type="checkbox" class="pe-c" style="width:auto" value="'+s.id+'|'+g.id+'|'+c.id+'">'+esc(c.name)+'</label>').join('')+'</div>').join('')+'</div>').join('')}
+function peCheck(all){document.querySelectorAll('.pe-c').forEach(cb=>cb.checked=all)}
+function publishExams(){
+  const t=(document.getElementById('pe-title').value||'').trim();if(!t)return toast('请填写考试名称');
+  const cbs=[...document.querySelectorAll('.pe-c:checked')];if(!cbs.length)return toast('请至少勾选一个班级');
+  const date=document.getElementById('pe-date').value,sub=document.getElementById('pe-subject').value;
+  cbs.forEach(cb=>{const v=cb.value.split('|');
+    db.exams.push({id:uid(),title:t,subject:sub,date,teacherId:(teachers().find(t2=>t2.classId===v[2])||{}).id||null,
+      schoolId:v[0],gradeId:v[1],classId:v[2],files:{template:[],sheetTmpl:[],answer:[],analysis:[],sheetStu:[]},questions:[],scores:{}})});
+  save();toast('已向 '+cbs.length+' 个班级统一发布「'+t+'」');vPubExam();
+}
+function tierStats(list){ // 得分率分层：优秀≥85% 良好75-85% 及格档60-75% 不及格<60%（list 为 0-1 得分率）
+  const ex=list.filter(r=>r<0.6).length,ok=list.filter(r=>r>=0.6&&r<0.75).length,
+        good=list.filter(r=>r>=0.75&&r<0.85).length,exc=list.filter(r=>r>=0.85).length;
+  return {exc,good,ok,ex,n:list.length};
+}
+function stackBar(t){ // 分层结构堆叠条（HTML，PDF 导出无障碍）
+  const d=n=>t.n?pct(n/t.n*100):0;
+  return '<div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:#f1f5fb">'+
+   '<i style="display:inline-block;height:100%;width:'+d(t.exc)+'%;background:#22a06b"></i>'+
+   '<i style="display:inline-block;height:100%;width:'+d(t.good)+'%;background:#2f6fed"></i>'+
+   '<i style="display:inline-block;height:100%;width:'+d(t.ok)+'%;background:#f0a92e"></i>'+
+   '<i style="display:inline-block;height:100%;width:'+d(t.ex)+'%;background:#e05252"></i></div>';
+}
+const tierLegend='<p class="small muted" style="margin-top:4px">■ 优秀(≥85%)　■ 良好(75-85%)　■ 及格档(60-75%)　■ 不及格(&lt;60%) · 按学生考试得分率分层</p>';
+function tierKpiRow(t){ // 优秀率/良好率/及格占比/不及格率 四卡
+  const one=(v,l,c)=>'<div style="flex:1;min-width:92px;background:#fff;border:1px solid #eef2f8;border-radius:10px;padding:8px;text-align:center"><b style="font-size:18px;color:'+c+'">'+v+'</b><div class="small muted">'+l+'</div></div>';
+  if(!t.n)return '';
+  return '<div class="row" style="margin:8px 0;flex-wrap:wrap">'+
+   one(pct(t.exc/t.n*100)+'%','优秀率（≥85%）','#22a06b')+
+   one(pct(t.good/t.n*100)+'%','良好率（75-85%）','#2f6fed')+
+   one(pct(t.ok/t.n*100)+'%','及格占比（60-75%）','#f0a92e')+
+   one(pct(t.ex/t.n*100)+'%','不及格率（&lt;60%）','#dc2626')+'</div>';
+}
+function schSessions(sid,cFilter){ // 同场考试（标题+日期）合并全校成绩 → [{key,title,date,exams,rows:[{u,s,rate}]}]
+  cFilter=cFilter||(cid=>true);
+  const map={};
+  db.exams.filter(e=>e.schoolId===sid&&cFilter(e.classId)).forEach(e=>{
+    const k=e.title+'|'+(e.date||'');
+    const ses=map[k]||(map[k]={key:k,title:e.title,date:e.date||'—',exams:[],rows:[]});
+    ses.exams.push(e);
+    const tot=e.questions.reduce((t,q)=>t+q.score,0);
+    Object.keys(e.scores).forEach(uid=>{const u=uById(uid);const sc=e.scores[uid];
+      if(u&&sc&&sc.total!=null&&tot)ses.rows.push({u,s:sc.total,rate:sc.total/tot})});
+  });
+  return Object.values(map).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+}
+function schAnaBlock(sid,prefix,storeKey,cFilter,titleSuffix){ // 学校整体成绩情况（多卡复用块）：场次选择+KPI+等级四卡+折线+分布+分层+排名+知识板块+评估
+  const sses=schSessions(sid,cFilter);
+  if(!sses.length)return {html:'<div class="card" style="margin-top:12px"><h3>🏫 学校整体成绩情况'+(titleSuffix?' · '+esc(titleSuffix):'')+'</h3><div class="empty">该校暂无考试数据</div></div>',draw:null};
+  const cm=ctx[storeKey]||(ctx[storeKey]={});
+  if(!cm[sid]||!sses.some(x=>x.key===cm[sid]))cm[sid]=sses[sses.length-1].key;
+  const ses=sses.find(x=>x.key===cm[sid]);
+  const done=ses.rows;
+  const tot=ses.exams[0].questions.reduce((t,q)=>t+q.score,0);
+  const avg=done.length?done.reduce((t,r)=>t+r.s,0)/done.length:0;
+  const mx=done.length?Math.max(...done.map(r=>r.s)):0;
+  const mn=done.length?Math.min(...done.map(r=>r.s)):0;
+  const stL=tierStats(done.map(r=>r.rate));
+  const dist=[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]];
+  done.forEach(r=>{const p=r.rate*100;const i=p<50?0:p<60?1:p<70?2:p<80?3:p<90?4:5;dist[i][1]++});
+  const donutImg=chartDonut([{v:stL.exc,c:'#22a06b'},{v:stL.good,c:'#2f6fed'},{v:stL.ok,c:'#f0a92e'},{v:stL.ex,c:'#e05252'}],160,done.length,'参考人数');
+  // 知识板块聚合（所选场次全部班级按 kpId 汇总）
+  const km={};
+  ses.exams.forEach(e=>computeExam(e).kpAcc.forEach(o=>{const id=o.kp?o.kp.id:'__none__';
+    const a=km[id]||(km[id]={kpId:o.kp?o.kp.id:null,got:0,all:0});a.got+=o.scoreGot;a.all+=o.scoreAll}));
+  const kpRows=Object.values(km).map(o=>({txt:o.kpId?kpSafe(o.kpId).text:'未关联题目',acc:Math.round(o.all?o.got/o.all*100:0)})).sort((a,b)=>a.acc-b.acc);
+  // 分层学生对比（所选场次）
+  const tierRows=[
+   {t:'优秀（≥85%）',n:stL.exc,c:'#22a06b',rs:done.filter(r=>r.rate>=0.85)},
+   {t:'良好（75-85%）',n:stL.good,c:'#2f6fed',rs:done.filter(r=>r.rate>=0.75&&r.rate<0.85)},
+   {t:'及格档（60-75%）',n:stL.ok,c:'#f0a92e',rs:done.filter(r=>r.rate>=0.6&&r.rate<0.75)},
+   {t:'不及格（<60%）',n:stL.ex,c:'#dc2626',rs:done.filter(r=>r.rate<0.6)}];
+  const sorted=[...done].sort((x,y)=>y.s-x.s);
+  const tierTag=r=>{const q=r.rate;return q>=0.85?'<span class="tag green">优秀</span>':q>=0.75?'<span class="tag blue">良好</span>':q>=0.6?'<span class="tag orange">及格</span>':'<span class="tag red">不及格</span>'};
+  // 历次趋势 + 整体评估
+  const sRate=se=>se.rows.length?se.rows.reduce((t,r)=>t+r.rate,0)/se.rows.length*100:NaN;
+  const first=sses.find(x=>x.rows.length),last=[...sses].reverse().find(x=>x.rows.length);
+  const trend=first&&last&&first.key!==last.key?sRate(last)-sRate(first):null;
+  const weak=kpRows[0],strong=kpRows[kpRows.length-1];
+  const evalTxt=!done.length?'该场次暂无成绩数据。':
+   (avg/tot>=0.8?'学校整体表现优秀，得分率稳定在高位。':
+    avg/tot>=0.7?'学校整体表现良好，中坚力量扎实，尾部学生仍有提升空间。':
+    avg/tot>=0.6?'学校整体处于中等水平，两极分化需关注，建议加强基础巩固。':
+    '学校整体得分率偏低，基础概念掌握不牢，需系统性复习薄弱板块。')+
+   (trend!=null?' 与首场相比，全校平均得分率'+(trend>=0?'上升 ':'下降 ')+Math.abs(Math.round(trend*10)/10)+'%。':'')+
+   (weak?' 最薄弱板块为「'+esc(weak.txt)+'」（'+weak.acc+'%），最强板块为「'+esc(strong.txt)+'」（'+strong.acc+'%）。':'');
+  const kpi=(v,l,c)=>'<div style="flex:1;min-width:104px;background:#f6f9ff;border-radius:10px;padding:10px;text-align:center"><b style="font-size:20px;color:'+(c||'#1f6feb')+'">'+v+'</b><div class="small muted">'+l+'</div></div>';
+  const M='margin-top:12px';
+  const html=
+   '<div class="card"><h3>🏫 学校整体成绩情况'+(titleSuffix?' · '+esc(titleSuffix):'')+'</h3>'+
+    '<div class="row" style="align-items:flex-end;flex-wrap:wrap"><div style="flex:1;min-width:240px"><label>选择考试场次（同场考试合并全校成绩）</label><select onchange="ctx.'+storeKey+'[\''+sid+'\']=this.value;renderApp()">'+
+     sses.slice().reverse().map(x=>'<option value="'+esc(x.key)+'"'+(x.key===ses.key?' selected':'')+'>'+esc(x.title)+'（'+x.date+' · '+x.exams.length+' 个班级）</option>').join('')+'</select></div>'+
+    '<span class="small muted">同一场考试（同名同日期）发布到多个班级时，自动合并为全校成绩。</span></div>'+
+    '<div class="row" style="margin:10px 0;flex-wrap:wrap">'+
+     kpi(done.length+' 人','参考人数')+kpi(Math.round(avg*10)/10+' / '+tot,'平均分 / 满分')+
+     kpi(mx,'最高分','#22a06b')+kpi(mn,'最低分','#dc2626')+
+     kpi(done.length?pct(avg/tot*100):'—','全校得分率')+'</div>'+
+    tierKpiRow(stL)+'</div>'+
+   '<div class="card" style="'+M+'"><h3>📈 历次考试成绩对比（折线 · 全校得分率%）</h3><canvas id="cv-'+prefix+'-line"></canvas>'+
+    '<p class="small muted" style="margin-top:4px">三条折线：全校平均 / 最高分 / 最低分（均折算为得分率%，跨不同满分卷可纵向对比）。</p></div>'+
+   '<div class="cols" style="'+M+';align-items:flex-start">'+
+    '<div class="card col"><h3>📊 总分分布</h3><canvas id="cv-'+prefix+'-dist"></canvas><p class="small muted" style="text-align:center">得分率分段 · 人数</p></div>'+
+    '<div class="card col" style="text-align:center"><h3>🍩 分数等级分布</h3><img src="'+donutImg+'" style="width:160px;max-width:100%"><p class="small muted">优秀 '+stL.exc+' · 良好 '+stL.good+' · 及格 '+stL.ok+' · 不及格 '+stL.ex+'</p></div></div>'+
+   '<div class="card" style="'+M+'"><h3>🧮 分层学生对比（所选场次 · 全校）</h3>'+stackBar(stL)+tierLegend+
+    '<table style="margin-top:10px"><tr><th>层级</th><th>人数</th><th>平均得分率</th><th>学生</th></tr>'+
+    tierRows.map(r=>'<tr><td><b style="color:'+r.c+'">■ '+r.t+'</b></td><td>'+r.n+' 人</td><td>'+(r.rs.length?pct(r.rs.reduce((t,x)=>t+x.rate,0)/r.rs.length*100)+'%':'—')+'</td><td class="small">'+(r.rs.length?r.rs.slice(0,8).map(x=>esc(x.u.name)).join('、')+(r.rs.length>8?' 等':''):'—')+'</td></tr>').join('')+'</table></div>'+
+   '<div class="card" style="'+M+'"><h3>🏅 学校学生排名（'+done.length+' 人 · 所选场次）</h3>'+
+    (sorted.length?htmlTable([['名次'],['姓名'],['学号'],['班级'],['得分',1],['得分率',1],['等级']],
+      sorted.map((r,i)=>[i<3?'<span style="font-size:15px">'+['🥇','🥈','🥉'][i]+'</span>':(i+1),esc(r.u.name),esc(r.u.studentNo||'—'),esc(clsLabel(r.u)),r.s+' / '+tot,pct(r.rate*100)+'%',tierTag(r)])):'<div class="empty">该场次暂无成绩</div>')+'</div>'+
+   '<div class="card" style="'+M+'"><h3>📚 知识板块深度分析（全校 · 按掌握率升序）</h3>'+
+    (kpRows.length?kpRows.map(r=>'<div class="row" style="align-items:center;margin:6px 0"><div style="flex:2" class="small">'+esc(r.txt)+'</div><div class="bar" style="flex:3"><i style="width:'+r.acc+'%;background:'+(r.acc<60?'var(--bad)':r.acc<80?'var(--warn)':'var(--ok)')+'"></i></div><div style="flex:0 0 48px" class="num small">'+r.acc+'%</div><div style="flex:0 0 70px;text-align:right"><span class="small" style="color:'+(r.acc<60?'#dc2626':r.acc<80?'#d97706':'#1a9e6c')+'"><b>'+(r.acc>=80?'达标':r.acc>=60?'基本达标':'待加强')+'</b></span></div></div>').join(''):
+     '<p class="small muted">本卷题目尚未关联知识点，请到「题目与知识点」关联后查看板块分析。</p>')+
+    (kpRows.length?'<p class="small muted" style="margin-top:6px">达标≥80% · 基本达标 60-80% · 待加强&lt;60%（得分率=全校该板块得分÷满分）</p>':'')+'</div>'+
+   '<div class="card" style="'+M+'"><h3>💡 整体表现评估</h3><p style="line-height:1.9">'+esc(evalTxt)+'</p>'+
+    '<p class="small muted">教学建议：优先安排「'+(weak?esc(weak.txt):'薄弱板块')+'」专项讲评与练习；对不及格学生（'+stL.ex+' 人）进行一对一辅导；优秀学生可布置拓展任务保持状态。</p></div>';
+  const draw=()=>setTimeout(()=>{
+    const cv=document.getElementById('cv-'+prefix+'-line');
+    if(cv)chartLine(cv,sses.map(x=>x.date),[
+     {name:'全校平均得分率',color:'#1f6feb',values:sses.map(x=>{const v=sRate(x);return isFinite(v)?Math.round(v*10)/10:NaN})},
+     {name:'最高分得分率',color:'#22a06b',values:sses.map(x=>{const d=x.rows;return d.length?Math.round(Math.max(...d.map(r=>r.rate))*1000)/10:NaN})},
+     {name:'最低分得分率',color:'#dc2626',values:sses.map(x=>{const d=x.rows;return d.length?Math.round(Math.min(...d.map(r=>r.rate))*1000)/10:NaN})}],
+     {max:100,height:260});
+    const cd=document.getElementById('cv-'+prefix+'-dist');
+    if(cd)drawDist(cd,dist);
+  },0);
+  return {html,draw};
+}
+function rptGo(o){ctx.rpt=o||{};renderApp()}
+function vReport(){ // 管理员学情下钻：全部学校对比→校内班级对比→班级报告→学生报告（每级 KPI+图表+PDF）
+  const view=document.getElementById('view');
+  const R=ctx.rpt||(ctx.rpt={});
+  const link=(t,go)=>'<a style="cursor:pointer" onclick="rptGo('+go+')">'+esc(t)+'</a>';
+  const meanRate=as=>{const ok=as.filter(a=>a.stats.n);return ok.length?ok.reduce((t,a)=>t+a.stats.avg/a.tot,0)/ok.length*100:null};
+  const kpi=(v,l,c)=>'<div style="flex:1;min-width:110px;background:#f6f9ff;border-radius:10px;padding:10px;text-align:center"><b style="font-size:20px;color:'+(c||'#1f6feb')+'">'+v+'</b><div class="small muted">'+l+'</div></div>';
+  const crumb=arr=>'<p class="small muted">'+arr.map((x,i)=>i===arr.length-1?'<b>'+esc(x[0])+'</b>':link(x[0],x[1])).join(' / ')+'</p>';
+  const pdfBtn=(title,id)=>'<div style="text-align:right;margin:4px 0"><button class="btn sm" style="background:#7c3aed" onclick="downloadDomPdf(\''+title+'\',document.getElementById(\''+id+'\'))">📄 下载PDF报告</button></div>';
+  let html='';const charts=[];let schB=null; // charts:[{id,labels,values,opt}] 或 {id,distData}
+  if(!R.sid){ // ① 全部学校对比
+    const data=db.schools.map(s=>{const exs=db.exams.filter(e=>e.schoolId===s.id);
+      return {s,nEx:exs.length,nStu:students().filter(u=>u.schoolId===s.id).length,rate:meanRate(exs.map(e=>computeExam(e)))}});
+    const rated=data.filter(d=>d.rate!=null);
+    const best=rated.length?rated.reduce((a,b)=>b.rate>a.rate?b:a):null;
+    html='<div class="card"><h3>🏫 全部学校对比总览</h3><div class="row" style="margin:8px 0;flex-wrap:wrap">'+
+     kpi(db.schools.length+' 所','学校数')+kpi(db.exams.length,'考试总数')+kpi(students().length,'学生总数')+
+     (best?kpi(pct(best.rate)+'%','最优：'+best.s.name,'#22a06b'):'')+'</div>'+
+     '<canvas id="cv-sch"></canvas>'+
+     '<p class="small muted" style="margin-top:6px">柱状图为各校「历次考试平均得分率」对比（该校所有考试得分率的均值）。</p></div>'+
+     '<div class="card"><h3>📋 学校明细（点击进入校内班级对比）</h3>'+
+     (db.schools.length?htmlTable([['学校'],['班级数',1],['学生数',1],['考试数',1],['历次均分',1],['平均得分率',1],['操作']],
+      data.map(d=>{const avgs=db.exams.filter(e=>e.schoolId===d.s.id).map(e=>computeExam(e)).filter(a=>a.stats.n);
+        const avg=avgs.length?Math.round(avgs.reduce((t,a)=>t+a.stats.avg,0)/avgs.length*10)/10:'—';
+        return [esc(d.s.name),d.s.grades.reduce((t,g)=>t+g.classes.length,0),d.nStu,d.nEx,avg,
+          d.rate!=null?pct(d.rate)+'%':'—','<button class="btn sm" onclick="rptGo({sid:\''+d.s.id+'\'})">进入</button>']})):'<div class="empty">暂无学校</div>')+'</div>';
+    if(rated.length)charts.push({id:'cv-sch',labels:rated.map(d=>d.s.name),values:rated.map(d=>Math.round(d.rate*10)/10),opt:{max:100,height:230,color:'#1f6feb',fmt:v=>v+'%',barW:110}});
+  } else if(!R.cid){ // ② 学校整体报告 + 校内班级对比
+    const s=schById(R.sid);if(!s){ctx.rpt={};return vReport()}
+    const clsData=[];
+    s.grades.forEach(g=>g.classes.forEach(c=>{const exs=examsOfClass(R.sid,g.id,c.id);
+      clsData.push({c,g,nEx:exs.length,nStu:students().filter(u=>u.classId===c.id).length,rate:meanRate(exs.map(e=>computeExam(e)))})}));
+    const rated=clsData.filter(d=>d.rate!=null);
+    const best=rated.length?rated.reduce((a,b)=>b.rate>a.rate?b:a):null;
+    const worst=rated.length>1?rated.reduce((a,b)=>b.rate<a.rate?b:a):null;
+    // 分层统计：全校历次考试全部(学生,考试)得分率
+    const pairs=[];
+    s.grades.forEach(g=>g.classes.forEach(c=>examsOfClass(R.sid,g.id,c.id).forEach(e=>{
+      const tot=e.questions.reduce((t,q)=>t+q.score,0);
+      Object.keys(e.scores).forEach(su=>{const sc=e.scores[su];if(sc&&sc.total!=null)pairs.push({cid:c.id,rate:sc.total/tot})})})));
+    const stSchool=tierStats(pairs.map(p=>p.rate));
+    clsData.forEach(d=>{d.tier=tierStats(pairs.filter(p=>p.cid===d.c.id).map(p=>p.rate))});
+    // 班级差距趋势：每场考试 班级得分率极差
+    const gapCharts=[];
+    db.exams.filter(e=>e.schoolId===R.sid).forEach(e=>{
+      const tot=e.questions.reduce((t,q)=>t+q.score,0);const cRs=[];
+      s.grades.forEach(g=>g.classes.forEach(c=>{const rs=students().filter(u=>u.classId===c.id).map(u2=>e.scores[u2.id]).filter(Boolean);
+        if(rs.length)cRs.push(rs.reduce((t,sc)=>t+sc.total/tot,0)/rs.length*100)}));
+      if(cRs.length>1)gapCharts.push({date:e.date||'',gap:Math.round((Math.max(...cRs)-Math.min(...cRs))*10)/10})});
+    // 班级名次轨迹：各场考试校内名次
+    const rankHead=[['考试'],['日期']].concat(clsData.map(d=>[esc(d.g.name+d.c.name),1]));
+    const rankRows=[];
+    db.exams.filter(e=>e.schoolId===R.sid).forEach(e=>{
+      const tot=e.questions.reduce((t,q)=>t+q.score,0);
+      const cr=clsData.map(d=>{const rs=students().filter(u=>u.classId===d.c.id).map(u2=>e.scores[u2.id]).filter(Boolean);
+        return rs.length?rs.reduce((t,sc)=>t+sc.total/tot,0)/rs.length*100:null});
+      const idx=cr.map((v,i)=>({v,i})).filter(x=>x.v!=null).sort((a,b)=>b.v-a.v);
+      if(idx.length>=2){const rk={};idx.forEach((x,j)=>rk[x.i]=j+1);
+        rankRows.push([esc(e.title),e.date].concat(cr.map((v,i)=>v==null?'<span class="muted">—</span>':'<b>第'+rk[i]+'名</b>')))}});
+    schB=schAnaBlock(R.sid,'sa','rptSchEx');
+    html=crumb([['学校总览','{}'],[s.name,'']])+pdfBtn('学校学情报告','rpt-body2')+
+     '<div id="rpt-body2"><div class="card"><h3>📊 '+esc(s.name)+' · 学校整体报告</h3><div class="row" style="margin:8px 0;flex-wrap:wrap">'+
+      kpi(clsData.reduce((t,d)=>t+d.nStu,0),'学生总数')+kpi(clsData.reduce((t,d)=>t+d.nEx,0),'考试总数')+
+      kpi(rated.length?pct(rated.reduce((t,d)=>t+d.rate,0)/rated.length)+'%':'—','全校平均得分率')+
+      (best?kpi(pct(best.rate)+'%','最优班级：'+best.g.name+' '+best.c.name,'#22a06b'):'')+
+      (worst?kpi(pct(worst.rate)+'%','待提升：'+worst.g.name+' '+worst.c.name,'#dc2626'):'')+'</div>'+
+      tierKpiRow(stSchool)+
+      '<canvas id="cv-cls-all"></canvas>'+
+      '<p class="small muted" style="margin-top:6px">柱状图为校内各班级「历次考试平均得分率」对比，用于横向定位薄弱班级。</p></div>'+
+     schB.html+
+     '<div class="card" style="margin-top:12px"><h3>📚 各班分数分层结构对比（历次考试全部学生得分率）</h3>'+
+      clsData.filter(d=>d.tier.n).map(d=>'<div style="margin:8px 0"><div class="small" style="display:flex;justify-content:space-between"><b>'+esc(d.g.name+' '+d.c.name)+'</b><span class="muted">'+d.tier.n+' 人次 · 优秀 '+pct(d.tier.exc/d.tier.n*100)+'% · 不及格 '+pct(d.tier.ex/d.tier.n*100)+'%</span></div>'+stackBar(d.tier)+'</div>').join('')+tierLegend+'</div>'+
+     (gapCharts.length?'<div class="card" style="margin-top:12px"><h3>📉 班级差距趋势（每场考试班级得分率极差）</h3><canvas id="cv-cls-gap"></canvas><p class="small muted" style="margin-top:4px">柱越高表示该场考试班际差距越大，需关注班级间均衡发展。</p></div>':'')+
+     (rankRows.length?'<div class="card" style="margin-top:12px"><h3>🏃 班级名次轨迹（各场考试校内名次）</h3>'+htmlTable(rankHead,rankRows)+'</div>':'')+
+      s.grades.map(g=>'<div class="card" style="margin-top:12px"><h3>'+esc(g.name)+'</h3>'+
+       (g.classes.length?htmlTable([['班级'],['任课教师'],['学生数',1],['考试数',1],['历次均分',1],['平均得分率',1],['操作']],
+        g.classes.map(c=>{const d=clsData.find(x=>x.c.id===c.id);
+          const exs=examsOfClass(R.sid,g.id,c.id);
+          const tc=(teachers().find(t=>t.classId===c.id)||{}).name||'未分配';
+          const avgs=exs.map(e=>computeExam(e)).filter(a=>a.stats.n);
+          const avg=avgs.length?Math.round(avgs.reduce((t,a)=>t+a.stats.avg,0)/avgs.length*10)/10:'—';
+          return [esc(c.name),esc(tc),d.nStu,d.nEx,avg,d.rate!=null?pct(d.rate)+'%':'—',
+            '<button class="btn sm" onclick="rptGo({sid:\''+R.sid+'\',gid:\''+g.id+'\',cid:\''+c.id+'\'})">班级报告</button>']})):'<div class="empty">该年级暂无班级</div>')+'</div>').join('')+'</div>';
+    if(rated.length)charts.push({id:'cv-cls-all',labels:rated.map(d=>d.g.name+' '+d.c.name),values:rated.map(d=>Math.round(d.rate*10)/10),opt:{max:100,height:230,color:'#2f6fed',fmt:v=>v+'%',barW:70,rotate:true}});
+    if(gapCharts.length)charts.push({id:'cv-cls-gap',labels:gapCharts.map(g=>g.date),values:gapCharts.map(g=>g.gap),opt:{height:220,color:'#f0a92e',fmt:v=>v+'%',barW:60}});
+  } else if(!R.uid){ // ③ 班级报告：考试趋势 + 最新考试分布与薄弱点 + 学生对比
+    const s=schById(R.sid);const g=s&&s.grades.find(x=>x.id===R.gid);const c=g&&g.classes.find(x=>x.id===R.cid);
+    if(!c){ctx.rpt={};return vReport()}
+    const exsS=[...examsOfClass(R.sid,R.gid,R.cid)].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    const stu=students().filter(u=>u.classId===R.cid);
+    const totOf=e=>e.questions.reduce((t,q)=>t+q.score,0);
+    const ratedE=exsS.map(e=>({e,a:computeExam(e)})).filter(x=>x.a.stats.n);
+    const rates=ratedE.map(x=>Math.round(x.a.stats.avg/x.a.tot*1000)/10);
+    const latest=ratedE.length?ratedE[ratedE.length-1]:null;
+    const stL=latest?tierStats(latest.a.rows.filter(r=>r.s!=null).map(r=>r.s/latest.a.tot)):{n:0};
+    const tierDonutImg=latest?chartDonut([{v:stL.exc,c:'#22a06b'},{v:stL.good,c:'#2f6fed'},{v:stL.ok,c:'#f0a92e'},{v:stL.ex,c:'#e05252'}],150,latest.a.stats.n,'参考人数'):'';
+    html=crumb([['学校总览','{}'],[s.name,'{sid:\''+R.sid+'\'}'],[(g?g.name:'')+' '+(c?c.name:''),'']])+pdfBtn('班级学情报告','rpt-body3')+
+     '<div id="rpt-body3"><div class="card"><h3>📊 '+esc((g?g.name:'')+' '+(c?c.name:''))+' · 班级整体报告</h3><div class="row" style="margin:8px 0;flex-wrap:wrap">'+
+      kpi(stu.length,'学生数')+kpi(exsS.length,'考试数')+
+      kpi(rates.length?pct(rates.reduce((t,v)=>t+v,0)/rates.length)+'%':'—','历次平均得分率')+
+      (latest?kpi(latest.a.stats.n+'/'+stu.length,'最新考试已录人数'):'')+
+      (latest?kpi(Math.round(latest.a.stats.avg*10)/10+' / '+latest.a.tot,'最新考试平均分'):'')+'</div>'+
+      (latest?tierKpiRow(stL):'')+
+      (rates.length?'<canvas id="cv-cls-trend"></canvas><p class="small muted" style="margin-top:4px">历次考试班级平均得分率走势。</p>':'<p class="small muted">暂无已判分考试。</p>')+'</div>'+
+     (latest?'<div class="card"><h3>📶 最新考试分析（'+esc(latest.e.title)+' · '+latest.e.date+'）</h3><div class="cols" style="align-items:flex-start">'+
+       '<div style="flex:1;min-width:200px"><canvas id="cv-cls-dist"></canvas><p class="small muted" style="text-align:center">成绩分布（得分率分段）</p></div>'+
+       '<div style="flex:1;min-width:170px;text-align:center"><img src="'+tierDonutImg+'" style="width:140px;max-width:100%"><p class="small muted">分数等级分布（优秀≥85% / 良好≥75% / 及格≥60%）</p></div>'+
+       '<div style="flex:1;min-width:240px"><b class="small">知识点掌握率（薄弱在前）</b>'+
+        latest.a.kpAcc.slice(0,6).map(o=>{const acc=Math.round(o.acc*100);
+          return '<div class="row" style="align-items:center;margin:6px 0"><div style="flex:2" class="small">'+(o.kp?esc(kpLabel(o.kp.id)):'<span class="tag gray">未关联</span>')+'</div><div class="bar" style="flex:3"><i style="width:'+acc+'%;background:'+(acc<60?'var(--bad)':acc<75?'var(--warn)':'var(--ok)')+'"></i></div><div style="flex:0 0 48px" class="num small">'+acc+'%</div></div>'}).join('')+'</div></div></div>'+
+      '<div class="card" style="margin-top:12px"><h3>🏆 成绩排名 TOP10（'+esc(latest.e.title)+'）</h3>'+
+       htmlTable([['名次'],['姓名'],['学号'],['得分',1],['得分率',1]],
+        [...latest.a.rows].filter(r=>r.s!=null).sort((x,y)=>y.s-x.s).slice(0,10)
+         .map((r,i)=>[i<3?'<span style="font-size:16px">'+['🥇','🥈','🥉'][i]+'</span>':(i+1),esc(r.u.name),esc(r.u.studentNo||'—'),r.s,pct(r.s/latest.a.tot*100)+'%']))+'</div>':'')+
+     '<div class="card"><h3>📑 班级考试（管理员可进入：上传材料 / 一键判卷 / 判卷分析）</h3>'+
+      (exsS.length?htmlTable([['考试'],['日期'],['已录人数',1],['平均分',1],['得分率',1],['操作']],
+       exsS.map(e=>{const a=computeExam(e);return [esc(e.title),e.date,a.stats.n+'/'+stu.length,Math.round(a.stats.avg*10)/10,
+         a.stats.n?pct(a.stats.avg/a.tot*100)+'%':'—','<button class="btn sm" onclick="openExam(\''+e.id+'\')">进入判卷</button>']})):'<div class="empty">暂无考试</div>')+'</div>'+
+     '<div class="card" style="margin-top:12px"><h3>👤 学生对比（'+stu.length+' 人，按历次平均得分率排序）</h3>'+
+      (stu.length?htmlTable([['排名'],['姓名'],['学号'],['考试数',1],['历次均分',1],['平均得分率',1],['最新成绩',1],['操作']],
+        stu.map(u=>({u,scs:exsS.map(e=>({e,s:e.scores[u.id]})).filter(x=>x.s)}))
+          .map(o=>({...o,rt:o.scs.length?o.scs.reduce((t,x)=>t+x.s.total/totOf(x.e),0)/o.scs.length*100:null}))
+          .sort((a,b)=>(b.rt||-1)-(a.rt||-1))
+          .map((o,i)=>{const avg=o.scs.length?Math.round(o.scs.reduce((t,x)=>t+x.s.total,0)/o.scs.length*10)/10:'—';
+            const last=o.scs[o.scs.length-1];
+            return [o.rt!=null?(i+1):'—',esc(o.u.name),esc(o.u.studentNo||'—'),o.scs.length,avg,o.rt!=null?pct(o.rt)+'%':'—',
+              last?(last.s.total+'/'+totOf(last.e)):'—',
+              o.scs.length?'<button class="btn sm" onclick="rptGo({sid:\''+R.sid+'\',gid:\''+R.gid+'\',cid:\''+R.cid+'\',uid:\''+o.u.id+'\'})">全部报告</button>':'<span class="muted">暂无成绩</span>']})):'<div class="empty">暂无学生，可在「师生账号管理」或教师端导入名单</div>')+'</div></div>';
+    if(rates.length)charts.push({id:'cv-cls-trend',labels:ratedE.map(x=>x.e.date||''),values:rates,opt:{max:100,height:220,color:'#2f6fed',fmt:v=>v+'%',barW:60}});
+    if(latest)charts.push({id:'cv-cls-dist',distData:latest.a.dist});
+  } else { // ④ 学生个人综合报告：历次趋势 + 个人vs班级对比 + 汇总薄弱点
+    const s=schById(R.sid);const g=s&&s.grades.find(x=>x.id===R.gid);const c=g&&g.classes.find(x=>x.id===R.cid);
+    const u=db.users.find(x=>x.id===R.uid);
+    if(!c||!u){ctx.rpt={sid:R.sid,gid:R.gid,cid:R.cid};return vReport()}
+    const exsS=[...examsOfClass(R.sid,R.gid,R.cid)].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    const totOf=e=>e.questions.reduce((t,q)=>t+q.score,0);
+    const rows=exsS.map(e=>{const sc=e.scores[R.uid];const a=computeExam(e);
+      return {e,sc,tot:totOf(e),rate:sc?sc.total/totOf(e)*100:null,cRate:a.stats.n?a.stats.avg/a.tot*100:null,
+        rank:sc?((a.rows.find(r=>r.u.id===R.uid)||{}).rank):null}});
+    const rated=rows.filter(r=>r.rate!=null);
+    const avgRate=rated.length?rated.reduce((t,r)=>t+r.rate,0)/rated.length:0;
+    const bestRank=rated.length?Math.min(...rated.map(r=>r.rank).filter(x=>x)) : null;
+    const lostAgg={};
+    exsS.forEach(e=>{const sc=e.scores[R.uid];if(!sc)return;
+      e.questions.forEach(q=>{const got=sc.q[q.no]||0;if(got<q.score){const k=kpSafe(q.kpId).text;lostAgg[k]=(lostAgg[k]||0)+(q.score-got)}})});
+    const weakTop=Object.keys(lostAgg).sort((a,b)=>lostAgg[b]-lostAgg[a]).slice(0,6);
+    const wMax=weakTop.length?lostAgg[weakTop[0]]:1;
+    html=crumb([['学校总览','{}'],[s.name,'{sid:\''+R.sid+'\'}'],[(g?g.name:'')+' '+(c?c.name:''),'{sid:\''+R.sid+'\',gid:\''+R.gid+'\',cid:\''+R.cid+'\'}'],[u.name,'']])+pdfBtn('学生个人学情报告','rpt-body4')+
+     '<div id="rpt-body4"><div class="card"><h3>📈 '+esc(u.name)+'（学号 '+esc(u.studentNo||'—')+'）· 个人综合报告</h3><div class="row" style="margin:8px 0;flex-wrap:wrap">'+
+      kpi(rated.length,'已考次数')+
+      kpi(rated.length?pct(avgRate)+'%':'—','历次平均得分率')+
+      (rated.length?kpi(pct(rated[rated.length-1].rate)+'%','最新得分率',rated[rated.length-1].rate>=avgRate?'#22a06b':'#dc2626'):'')+
+      (bestRank?kpi('第 '+bestRank+' 名','历史最佳班级排名','#d97706'):'')+'</div>'+
+      (rated.length?'<canvas id="cv-stu-trend"></canvas><p class="small muted" style="margin-top:4px">历次考试个人得分率走势。</p>':'<p class="small muted">该生暂无成绩记录。</p>')+'</div>'+
+     (rated.length?'<div class="card"><h3>⚖ 个人 vs 班级对比</h3>'+
+      htmlTable([['考试'],['日期'],['个人得分率',1],['班级平均得分率',1],['差值',1],['班级排名',1],['操作']],
+       rows.map(r=>[esc(r.e.title),r.e.date,
+        r.rate!=null?pct(r.rate)+'%':'—',r.cRate!=null?pct(r.cRate)+'%':'—',
+        r.rate!=null&&r.cRate!=null?'<b style="color:'+(r.rate>=r.cRate?'#1a9e6c':'#dc2626')+'">'+(r.rate-r.cRate>=0?'+':'')+Math.round((r.rate-r.cRate)*10)/10+'%</b>':'—',
+        r.rank?'第 '+r.rank+' 名':'—',
+        r.sc?'<button class="btn sm" onclick="showReport(\''+r.e.id+'\',\''+R.uid+'\')">查看报告</button>':'<span class="muted">—</span>']))+
+      '<p class="small muted" style="margin-top:6px">「查看报告」弹出单场考试的完整个人分析报告（含知识点分布、雷达图、失分归因等）。</p></div>':'')+
+     (weakTop.length?'<div class="card"><h3>🚩 历次考试汇总薄弱知识点（按累计失分排序）</h3>'+
+      weakTop.map(t=>'<div class="row" style="align-items:center;margin:6px 0"><div style="flex:2" class="small">'+esc(t)+'</div><div class="bar" style="flex:3"><i style="width:'+Math.round(lostAgg[t]/wMax*100)+'%;background:var(--bad)"></i></div><div style="flex:0 0 64px" class="num small">失 '+Math.round(lostAgg[t]*10)/10+' 分</div></div>').join('')+
+      '<p class="small muted" style="margin-top:6px">建议按此顺序安排专项练习；每场考试的详细解析可在上方「查看报告」中逐题核对。</p></div>':'')+'</div>';
+    if(rated.length)charts.push({id:'cv-stu-trend',labels:rated.map(r=>r.e.date||''),values:rated.map(r=>Math.round(r.rate*10)/10),opt:{max:100,height:220,color:'#22a06b',fmt:v=>v+'%',barW:60}});
+  }
+  view.innerHTML=html;
+  if(schB&&schB.draw)schB.draw();
+  setTimeout(()=>{
+    charts.forEach(ch=>{const cv=document.getElementById(ch.id);if(!cv)return;
+      if(ch.distData){drawDist(cv,ch.distData)}
+      else if(ch.values&&ch.values.length)barChart(cv,ch.labels,ch.values,ch.opt)});
+  },0);
+}
+function chartLine(cv,labels,series,opts){ // 多系列折线图 → series=[{name,values,color}]，空值断线
+  opts=opts||{};const dpr=window.devicePixelRatio||1;
+  const pad={l:44,r:14,t:30,b:34};const n=labels.length;if(!n||!series.length)return;
+  const slot=opts.slot||90;
+  const cw=cv.clientWidth||cv.parentNode&&cv.parentNode.clientWidth||560;
+  const need=pad.l+pad.r+n*slot;const W=Math.max(cw||560,Math.min(need,2400)||need);
+  const H=opts.height||250;cv.width=W*dpr;cv.height=H*dpr;cv.style.height=H+'px';cv.style.width=W+'px';cv.style.maxWidth='none';
+  if(W>=(cw||560)+4&&cv.parentNode&&cv.parentNode.style)cv.parentNode.style.overflowX='auto';
+  const g=cv.getContext('2d');g.scale(dpr,dpr);g.clearRect(0,0,W,H);
+  const allV=series.reduce((a,s)=>a.concat(s.values),[]).filter(v=>isFinite(v));
+  const max=opts.max!=null?opts.max:Math.max(...allV,1)*1.15;
+  g.strokeStyle='#e3e8f0';g.font='11px sans-serif';
+  for(let i=0;i<=4;i++){const y=pad.t+(H-pad.t-pad.b)*i/4;g.beginPath();g.moveTo(pad.l,y);g.lineTo(W-pad.r,y);g.stroke();
+    g.fillStyle='#5b6b83';g.textAlign='right';g.fillText((max*(1-i/4)).toFixed(opts.decimal||0),pad.l-5,y+4)}
+  const X=i=>pad.l+(W-pad.l-pad.r)*(i+0.5)/n;
+  const Y=v=>pad.t+(H-pad.t-pad.b)*(1-Math.max(0,Math.min(max,v))/max);
+  labels.forEach((lb,i)=>{const s2=String(lb);g.fillStyle='#5b6b83';g.textAlign='center';
+    g.fillText(s2.length>10?s2.slice(0,9)+'…':s2,X(i),H-10)});
+  series.forEach(s=>{
+    g.strokeStyle=s.color;g.lineWidth=2;g.beginPath();let st=false;
+    s.values.forEach((v,i)=>{if(!isFinite(v)){st=false;return}const x=X(i),y=Y(v);if(!st){g.moveTo(x,y);st=true}else g.lineTo(x,y)});
+    g.stroke();g.lineWidth=1;
+    s.values.forEach((v,i)=>{if(!isFinite(v))return;const x=X(i),y=Y(v);
+      g.beginPath();g.arc(x,y,3.5,0,Math.PI*2);g.fillStyle=s.color;g.fill();
+      g.fillStyle='#1c2434';g.textAlign='center';g.font='10px sans-serif';g.fillText(String(Math.round(v*10)/10),x,y-7)})});
+  let lx=pad.l+4;g.font='11px sans-serif';
+  series.forEach(s=>{g.fillStyle=s.color;g.fillRect(lx,pad.t-14,12,5);
+    g.fillStyle='#1c2434';g.textAlign='left';g.fillText(s.name,lx+16,pad.t-9);
+    lx+=16+g.measureText(s.name).width+20});
+}
+function vClsAna(){ // 教师端班级情况分析：整体成绩 + 排名 + 薄弱点 + 等级/总分分布 + 历次趋势折线 + 分层对比 + 评估 + 知识板块深度分析
+  const view=document.getElementById('view');
+  const exsS=[...examsOfClass(me.schoolId,me.gradeId,me.classId)].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const stu=students().filter(u=>u.classId===me.classId);
+  const totOf=e=>e.questions.reduce((t,q)=>t+q.score,0);
+  if(!exsS.length){view.innerHTML='<div class="card"><div class="empty">本班暂无考试。请先在「📝 发布考试/上传试卷」发布考试并判分，完成后即可查看班级情况分析。</div></div>';return}
+  if(ctx.clsAnaEx==null||!exsS.some(e=>e.id===ctx.clsAnaEx))ctx.clsAnaEx=exsS[exsS.length-1].id;
+  const e=db.exams.find(x=>x.id===ctx.clsAnaEx);
+  const a=computeExam(e);
+  const kpi=(v,l,c)=>'<div style="flex:1;min-width:104px;background:#f6f9ff;border-radius:10px;padding:10px;text-align:center"><b style="font-size:20px;color:'+(c||'#1f6feb')+'">'+v+'</b><div class="small muted">'+l+'</div></div>';
+  const stL=tierStats(a.rows.filter(r=>r.s!=null).map(r=>r.s/a.tot));
+  const donutImg=chartDonut([{v:stL.exc,c:'#22a06b'},{v:stL.good,c:'#2f6fed'},{v:stL.ok,c:'#f0a92e'},{v:stL.ex,c:'#e05252'}],160,a.stats.n,'参考人数');
+  // 历次趋势数据（含无成绩场次：NaN 断线）
+  const ratedE=exsS.map(x=>({e:x,a:computeExam(x)})).filter(x=>x.a.stats.n>0);
+  const byId={};ratedE.forEach(x=>byId[x.e.id]=x.a);
+  const val=(id,f)=>byId[id]&&byId[id].stats.n?Math.round(f(byId[id])*10)/10:NaN;
+  const lineSeries=[
+   {name:'班级平均得分率',color:'#1f6feb',values:exsS.map(x=>val(x.id,aa=>aa.stats.avg/aa.tot*100))},
+   {name:'最高分得分率',color:'#22a06b',values:exsS.map(x=>val(x.id,aa=>aa.stats.max/aa.tot*100))},
+   {name:'最低分得分率',color:'#dc2626',values:exsS.map(x=>val(x.id,aa=>aa.stats.min/aa.tot*100))}];
+  // 分层学生对比（当前所选考试）
+  const tierRows=[
+   {t:'优秀（≥85%）',n:stL.exc,c:'#22a06b',rs:a.rows.filter(r=>r.s!=null&&r.s/a.tot>=0.85)},
+   {t:'良好（75-85%）',n:stL.good,c:'#2f6fed',rs:a.rows.filter(r=>r.s!=null&&r.s/a.tot>=0.75&&r.s/a.tot<0.85)},
+   {t:'及格档（60-75%）',n:stL.ok,c:'#f0a92e',rs:a.rows.filter(r=>r.s!=null&&r.s/a.tot>=0.6&&r.s/a.tot<0.75)},
+   {t:'不及格（<60%）',n:stL.ex,c:'#dc2626',rs:a.rows.filter(r=>r.s!=null&&r.s/a.tot<0.6)}];
+  // 排名表
+  const sorted=a.rows.filter(r=>r.s!=null).sort((x,y)=>y.s-x.s);
+  const tierTag=r=>{const q=r.s/a.tot;return q>=0.85?'<span class="tag green">优秀</span>':q>=0.75?'<span class="tag blue">良好</span>':q>=0.6?'<span class="tag orange">及格</span>':'<span class="tag red">不及格</span>'};
+  // 知识板块深度分析（班级维度）
+  const kpRows=a.kpAcc.map(o=>{const acc=Math.round(o.acc*100);
+    return {o,acc,lv:acc>=80?['达标','#1a9e6c']:acc>=60?['基本达标','#d97706']:['待加强','#dc2626']}});
+  // 整体表现评估
+  const first=ratedE[0],last=ratedE[ratedE.length-1];
+  const trend=first&&last&&first.e.id!==last.e.id?(last.a.stats.avg/last.a.tot-first.a.stats.avg/first.a.tot)*100:null;
+  const weak=kpRows.slice().sort((x,y)=>x.o.acc-y.o.acc)[0];
+  const strong=kpRows.slice().sort((x,y)=>y.o.acc-x.o.acc)[0];
+  const kpTxt=o=>o&&o.o.kp?esc(kpLabel(o.o.kp.id)):'未关联题目';
+  const evalTxt=(a.stats.avg/a.tot>=0.8?'班级整体表现优秀，得分率稳定在高位。':
+    a.stats.avg/a.tot>=0.7?'班级整体表现良好，中坚力量扎实，尾部学生仍有提升空间。':
+    a.stats.avg/a.tot>=0.6?'班级整体处于中等水平，两极分化需关注，建议加强基础巩固。':
+    '班级整体得分率偏低，基础概念掌握不牢，需系统性复习薄弱板块。')+
+   (trend!=null?' 与上次相比，班级平均得分率'+(trend>=0?'上升 ':'下降 ')+Math.abs(Math.round(trend*10)/10)+'%。':'')+
+   (weak?' 最薄弱板块为「'+kpTxt(weak)+'」（'+weak.acc+'%），最强板块为「'+kpTxt(strong)+'」（'+strong.acc+'%）。':'');
+  view.innerHTML=
+   '<div class="card"><h3>📊 班级情况分析</h3><div class="row" style="align-items:flex-end;flex-wrap:wrap">'+
+    '<div style="flex:1;min-width:240px"><label>选择考试</label><select onchange="ctx.clsAnaEx=this.value;renderApp()">'+
+     exsS.slice().reverse().map(x=>'<option value="'+x.id+'"'+(x.id===e.id?' selected':'')+'>'+esc(x.title)+'（'+(x.date||'—')+'）</option>').join('')+'</select></div>'+
+    '<span class="small muted">共 '+exsS.length+' 场考试 · '+stu.length+' 名学生 · 以下「等级/排名/分层/知识板块」均为所选考试数据，「趋势」为全部考试</span></div>'+
+    '<div class="row" style="margin:10px 0;flex-wrap:wrap">'+
+     kpi(a.stats.n+'/'+stu.length,'已录人数')+
+     kpi(Math.round(a.stats.avg*10)/10+' / '+a.tot,'平均分 / 满分')+
+     kpi(a.stats.max,'最高分','#22a06b')+
+     kpi(a.stats.min,'最低分','#dc2626')+
+     kpi(pct(a.stats.avg/a.tot*100)+'%','班级得分率')+'</div>'+
+    tierKpiRow(stL)+'</div>'+
+   '<div class="card" style="margin-top:12px"><h3>📈 历次考试成绩对比（折线 · 得分率%）</h3><canvas id="cv-ana-line"></canvas>'+
+    '<p class="small muted" style="margin-top:4px">三条折线：班级平均 / 最高分 / 最低分（均折算为得分率%，跨不同满分卷可纵向对比）。</p></div>'+
+   '<div class="cols" style="margin-top:12px;align-items:flex-start">'+
+    '<div class="card col"><h3>📊 总分分布</h3><canvas id="cv-ana-dist"></canvas><p class="small muted" style="text-align:center">得分率分段 · 人数</p></div>'+
+    '<div class="card col" style="text-align:center"><h3>🍩 分数等级分布</h3><img src="'+donutImg+'" style="width:160px;max-width:100%">'+
+     '<p class="small muted">优秀 '+stL.exc+' · 良好 '+stL.good+' · 及格 '+stL.ok+' · 不及格 '+stL.ex+'</p></div></div>'+
+   '<div class="card" style="margin-top:12px"><h3>🧮 分层学生对比（所选考试）</h3>'+stackBar(stL)+tierLegend+
+    '<table style="margin-top:10px"><tr><th>层级</th><th>人数</th><th>平均得分率</th><th>学生</th></tr>'+
+    tierRows.map(r=>'<tr><td><b style="color:'+r.c+'">■ '+r.t+'</b></td><td>'+r.n+' 人</td><td>'+(r.rs.length?pct(r.rs.reduce((t,x)=>t+x.s/a.tot,0)/r.rs.length*100)+'%':'—')+'</td><td class="small">'+(r.rs.length?r.rs.slice(0,8).map(x=>esc(x.u.name)).join('、')+(r.rs.length>8?' 等':''):'—')+'</td></tr>').join('')+'</table></div>'+
+   '<div class="card" style="margin-top:12px"><h3>🏅 班级学生排名（'+a.stats.n+' 人已录）</h3>'+
+    (sorted.length?htmlTable([['名次'],['姓名'],['学号'],['得分',1],['得分率',1],['等级']],
+     sorted.map((r,i)=>[i<3?'<span style="font-size:15px">'+['🥇','🥈','🥉'][i]+'</span>':(i+1),esc(r.u.name),esc(r.u.studentNo||'—'),r.s+' / '+a.tot,pct(r.s/a.tot*100)+'%',tierTag(r)])):'<div class="empty">该考试暂无成绩</div>')+'</div>'+
+   '<div class="card" style="margin-top:12px"><h3>📚 知识板块深度分析（全班 · 按掌握率升序）</h3>'+
+    (kpRows.length?kpRows.slice().sort((x,y)=>x.o.acc-y.o.acc).map(r=>'<div class="row" style="align-items:center;margin:6px 0"><div style="flex:2" class="small">'+(r.o.kp?esc(kpLabel(r.o.kp.id)):'<span class="tag gray">未关联</span>')+'</div><div class="bar" style="flex:3"><i style="width:'+r.acc+'%;background:'+(r.acc<60?'var(--bad)':r.acc<80?'var(--warn)':'var(--ok)')+'"></i></div><div style="flex:0 0 48px" class="num small">'+r.acc+'%</div><div style="flex:0 0 70px;text-align:right"><span class="small" style="color:'+r.lv[1]+'"><b>'+r.lv[0]+'</b></span></div></div>').join(''):
+     '<p class="small muted">本卷题目尚未关联知识点，请到「题目与知识点」关联后查看板块分析。</p>')+
+    (kpRows.length?'<p class="small muted" style="margin-top:6px">达标≥80% · 基本达标 60-80% · 待加强&lt;60%（得分率=全班该板块得分÷满分）</p>':'')+'</div>'+
+   '<div class="card" style="margin-top:12px"><h3>💡 整体表现评估</h3><p style="line-height:1.9">'+esc(evalTxt)+'</p>'+
+    '<p class="small muted">教学建议：优先安排「'+(weak?kpTxt(weak):'薄弱板块')+'」专项讲评与练习；对不及格学生（'+stL.ex+' 人）进行一对一辅导；优秀学生可布置拓展任务保持状态。</p></div>';
+  setTimeout(()=>{
+    const cv=document.getElementById('cv-ana-line');if(cv)chartLine(cv,exsS.map(x=>x.date||''),lineSeries,{max:100,height:260});
+    const cd=document.getElementById('cv-ana-dist');if(cd)drawDist(cd,a.dist);
+  },0);
+}
+function vInvitesImpl(){
+  const view=document.getElementById('view');
+  const s0=db.schools[0],g0=s0&&s0.grades[0],c0=g0&&g0.classes[0];
+  view.innerHTML='<div class="card"><h3>🎫 批量生成邀请码（教师码 / 学生码，一人一码，与班级绑定）</h3>'+
+  '<div class="row" style="align-items:flex-end">'+
+  '<div style="flex:0 0 130px"><label>角色</label><select id="iv-role"><option value="teacher">教师码</option><option value="student">学生码</option></select></div>'+
+  '<div style="flex:1;min-width:260px"><label>目标班级</label><div id="iv-host">'+selectSchoolTree('iv',{schoolId:s0&&s0.id,gradeId:g0&&g0.id,classId:c0&&c0.id})+'</div></div>'+
+  '<div style="flex:0 0 100px"><label>数量</label><input id="iv-n" type="number" value="1" min="1" max="50"></div>'+
+  '<button class="btn" onclick="genInvites()">生成</button></div></div>'+
+  '<div class="card"><h3>邀请码列表</h3><div id="iv-list"></div></div>';
+  ivList();
+}
+function genInvites(){
+  const role=document.getElementById('iv-role').value;const v=treeVal('iv');
+  const n=Math.max(1,Math.min(50,+document.getElementById('iv-n').value||1));
+  if(!v.schoolId||!v.gradeId||!v.classId)return toast('请选择完整班级');
+  for(let i=0;i<n;i++){let code;do{code=(role==='teacher'?'T':'S')+Math.random().toString(36).slice(2,6).toUpperCase()+String(Date.now()).slice(-3)}while(db.invites.some(x=>x.code===code));
+    db.invites.push({code,role,schoolId:v.schoolId,gradeId:v.gradeId,classId:v.classId,createdBy:'admin',usedBy:null})}
+  save();toast('已生成 '+n+' 个'+roleCN[role]+'邀请码');ivList();
+}
+function ivList(){
+  const rows=db.invites.slice().reverse().map(i=>[ '<b style="letter-spacing:1px">'+i.code+'</b>',
+   '<span class="tag '+(i.role==='teacher'?'blue':'green')+'">'+roleCN[i.role]+'码</span>',
+   schoolName(i.schoolId)+' · '+gradeOf(i.schoolId,i.gradeId)+' '+classOf(i.schoolId,i.gradeId,i.classId),
+   i.usedBy?'<span class="tag gray">已使用</span>':'<span class="tag orange">未使用</span>',
+   i.usedBy?esc((uById(i.usedBy)||{}).name||'—'):'—',
+   i.usedBy?'':'<button class="btn red sm" onclick="db.invites=db.invites.filter(x=>x.code!==\''+i.code+'\');save();ivList();toast(\'已作废\')">作废</button>']);
+  document.getElementById('iv-list').innerHTML=htmlTable([['邀请码'],['类型'],['绑定班级'],['状态'],['使用者'],[null]],rows)+
+  '<p class="small muted" style="margin-top:8px">教师码用于教师端首次注册；学生码用于学生端首次注册（学生码也可由教师在其端内生成）。注册时班级随码自动绑定。</p>';
+}
+function admins(){return db.users.filter(u=>u.role==='admin')}
+function vUsers(){
+  const view=document.getElementById('view');
+  view.innerHTML='<div class="card"><h3>🛡️ 管理员账号（可增设多个管理员，权限相同）</h3><div id="u-a"></div>'+
+  '<div class="row" style="align-items:flex-end;margin-top:12px">'+
+  '<div style="flex:1;min-width:130px"><label>新管理员姓名</label><input id="na-name" placeholder="如：李主任"></div>'+
+  '<div style="flex:1;min-width:130px"><label>登录账号</label><input id="na-u" placeholder="如：admin2"></div>'+
+  '<div style="flex:1;min-width:130px"><label>初始密码</label><input id="na-p" placeholder="如：admin123"></div>'+
+  '<button class="btn" onclick="addAdmin()">＋ 新增管理员</button></div></div>'+
+  '<div class="card"><h3>👥 教师账号</h3><div id="u-t"></div></div><div class="card"><h3>👥 学生账号</h3><div id="u-s"></div></div>'+
+  '<div class="card"><h3>📥 批量导入学生名单（Excel / Word / CSV / 粘贴文字）</h3>'+
+  '<div id="imp-host"></div>'+
+  '<input type="file" multiple accept=".xlsx,.docx,.csv,.txt" style="margin-top:8px" onchange="importFiles(\'adm\',this)">'+
+  '<textarea id="imp-paste-adm" rows="4" style="margin-top:8px" placeholder="粘贴名单：每行一名学生，支持「学号 姓名」或「姓名 学号」，逗号/空格/Tab 均可；Excel 里可直接复制整列粘贴"></textarea>'+
+  '<div class="row" style="margin-top:10px;align-items:center"><button class="btn" onclick="confirmImport(\'adm\')">解析并导入所选班级</button><span id="imp-status-adm" class="small muted"></span></div>'+
+  '<p class="small muted" style="margin-top:8px">导入自动创建学生账号：用户名=学号（无学号自动生成），初始密码 123456；同学号/同姓名自动跳过。照片识字（OCR）暂不支持，请粘贴文字或使用 Excel/Word 文件；旧版 .doc/.xls 请另存为 .docx/.xlsx。</p></div>';
+  uTable();
+}
+function addAdmin(){
+  const name=(document.getElementById('na-name').value||'').trim();
+  const un=(document.getElementById('na-u').value||'').trim();
+  const pwd=(document.getElementById('na-p').value||'').trim();
+  if(!name||!un||!pwd)return toast('请完整填写姓名、账号和初始密码');
+  if(pwd.length<4)return toast('密码至少 4 位');
+  if(db.users.some(x=>x.username===un))return toast('该登录账号已存在');
+  db.users.push({id:uid(),role:'admin',username:un,password:pwd,name:name});
+  save();toast('管理员「'+name+'」已创建，可用其账号密码登录管理员端');
+  document.getElementById('na-name').value='';document.getElementById('na-u').value='';document.getElementById('na-p').value='';
+  uTable();
+}
+function delAdmin(id){
+  const u=uById(id);
+  if(u.id===me.id)return toast('不能删除当前登录中的管理员账号');
+  if(admins().length<=1)return toast('系统至少需要保留 1 名管理员');
+  if(!confirm('确认删除管理员「'+u.name+'」？'))return;
+  db.users=db.users.filter(x=>x.id!==id);save();toast('已删除');uTable();
+}
+function resetPwd(id){ // 管理员重置任意账号密码
+  const u=uById(id);if(!u)return toast('账号不存在');
+  let p=prompt('【重置密码】请输入「'+u.name+'」的新密码（至少 4 位）：');
+  if(p==null)return;p=p.trim();
+  if(p.length<4)return toast('新密码至少 4 位，请重新操作');
+  u.password=p;save();toast('「'+u.name+'」的密码已重置为：'+p);
+}
+function editClass(id){ctx.editUser=id;uTable()}
+function cancelEditClass(){ctx.editUser=null;uTable()}
+function saveEditClass(){ // 保存调整班级：读取 ec-s/ec-g/ec-c
+  const u=uById(ctx.editUser);if(!u)return;
+  const get=n=>{const el=document.getElementById(n);return el?el.value:''};
+  const sid=get('ec-s'),gid=get('ec-g'),cid=get('ec-c');
+  if(!sid||!gid||!cid)return toast('请选择完整的学校 / 年级 / 班级');
+  const cls=clsLabel({schoolId:sid,gradeId:gid,classId:cid});
+  if(!confirm('确认将「'+u.name+'」调整到 '+cls+'？'))return;
+  u.schoolId=sid;u.gradeId=gid;u.classId=cid;ctx.editUser=null;save();toast('「'+u.name+'」已调整到 '+cls);uTable();
+}
+function uTable(){
+  const ua=document.getElementById('u-a');
+  if(ua)ua.innerHTML=htmlTable([['姓名'],['账号'],['操作']],
+   admins().map(a=>[esc(a.name)+(a.id===me.id?' <span class="tag blue">当前登录</span>':''),esc(a.username),
+    '<button class="btn ghost sm" onclick="resetPwd(\''+a.id+'\')">重置密码</button> '+
+    '<button class="btn red sm" onclick="delAdmin(\''+a.id+'\')">删除</button>']));
+  document.getElementById('u-t').innerHTML=teachers().length?htmlTable([['姓名'],['账号'],['所属班级'],['操作']],
+   teachers().map(t=>{const ec=ctx.editUser===t.id;
+    return [esc(t.name),esc(t.username),
+     ec?'<span id="ec-host">'+selectSchoolTree('ec',{schoolId:t.schoolId,gradeId:t.gradeId,classId:t.classId})+'</span>':clsLabel(t),
+     ec?'<button class="btn sm" onclick="saveEditClass()">保存</button> <button class="btn gray sm" onclick="cancelEditClass()">取消</button>'
+       :'<button class="btn ghost sm" onclick="resetPwd(\''+t.id+'\')">重置密码</button> <button class="btn gray sm" onclick="editClass(\''+t.id+'\')">调整班级</button>']})):'<div class="empty">暂无教师</div>';
+  document.getElementById('u-s').innerHTML=students().length?htmlTable([['姓名'],['学号'],['账号'],['所属班级'],['操作']],
+   students().map(u=>{const ec=ctx.editUser===u.id;
+    return [esc(u.name),esc(u.studentNo||'—'),esc(u.username),
+     ec?'<span id="ec-host">'+selectSchoolTree('ec',{schoolId:u.schoolId,gradeId:u.gradeId,classId:u.classId})+'</span>':clsLabel(u),
+     ec?'<button class="btn sm" onclick="saveEditClass()">保存</button> <button class="btn gray sm" onclick="cancelEditClass()">取消</button>'
+       :'<button class="btn ghost sm" onclick="resetPwd(\''+u.id+'\')">重置密码</button> <button class="btn gray sm" onclick="editClass(\''+u.id+'\')">调整班级</button>']})):'<div class="empty">暂无学生</div>';
+  const ih=document.getElementById('imp-host');
+  if(ih){const s0=db.schools[0],g0=s0&&s0.grades[0],c0=g0&&g0.classes[0];ih.innerHTML=selectSchoolTree('imp',{schoolId:s0&&s0.id,gradeId:g0&&g0.id,classId:c0&&c0.id})}
+}
+function vCompare(){ // 多校多班对比：可勾选学校与班级，展示各校每场考试成绩对比
+  const view=document.getElementById('view');
+  if(!ctx.cmpSel)ctx.cmpSel={};
+  if(!ctx.cmpSchEx)ctx.cmpSchEx={};
+  db.schools.forEach(s=>{if(ctx.cmpSel['s'+s.id]===undefined)ctx.cmpSel['s'+s.id]=true;
+    s.grades.forEach(g=>g.classes.forEach(c=>{if(ctx.cmpSel['c'+c.id]===undefined)ctx.cmpSel['c'+c.id]=true}))});
+  const sSel=sid=>!!ctx.cmpSel['s'+sid];
+  const cSel=cid=>!!ctx.cmpSel['c'+cid];
+  const rate=a=>a.tot&&a.stats.n?a.stats.avg/a.tot*100:null;
+  const schools=db.schools.filter(s=>sSel(s.id));
+  const exSel=db.exams.filter(e=>sSel(e.schoolId)&&cSel(e.classId));
+  ctx.cmpPdfName='多校多班对比报告';
+  view.innerHTML=
+   '<div class="row" style="justify-content:flex-end"><button class="btn sm" style="background:#7c3aed" onclick="downloadDomPdf(ctx.cmpPdfName,document.getElementById(\'cmp-body\'))">📄 下载PDF对比报告</button></div>'+
+   '<div class="card"><h3>🎯 选择参与对比的学校与班级</h3><div id="cmp-sel"></div>'+
+   '<p class="small muted" style="margin-top:8px">取消勾选即把对应学校/班级移出下方所有对比；勾选状态立即生效。PDF导出仅包含下方对比结果，不含本选择区。</p></div>'+
+   '<div id="cmp-body">'+
+   '<div class="card" style="margin-top:12px"><h3>🏫 学校总对比（所选班级全部考试的加权平均得分率）</h3>'+
+    (schools.length?'<canvas id="cv-sch"></canvas><div id="cmp-sch-t" style="margin-top:12px"></div>':'<div class="empty">请至少勾选一所学校</div>')+'</div>'+
+   '<div class="card" style="margin-top:12px"><h3>📚 各校分数分层结构对比（全部学生·考试得分率分层）</h3><div id="cmp-tiers"></div></div>'+
+   '<div id="cmp-sch-ana"></div>'+
+   '<div class="card" style="margin-top:12px"><h3>📋 各校每场考试对比矩阵（按考试名称+日期对齐，绿色为该场最优）</h3><div id="cmp-matrix"></div></div>'+
+   '<div class="card" style="margin-top:12px"><h3>🧮 班级逐场明细（所选班级的每一次考试）</h3>'+
+    (exSel.length?'<canvas id="cv-cls"></canvas><div id="cmp-t" style="margin-top:14px"></div>':'<div class="empty">所选范围内暂无考试</div>')+'</div>'+
+   '<div class="card" style="margin-top:12px"><h3>🏆 单场考试各班排名</h3>'+
+    (exSel.length?'<div class="row" style="align-items:flex-end"><div style="flex:1;min-width:240px"><label>选择考试</label><select id="cmp-ex">'+
+      db.exams.map((e,i)=>({e,i})).filter(x=>sSel(x.e.schoolId)&&cSel(x.e.classId)&&computeExam(x.e).stats.n>0)
+      .map(x=>'<option value="'+x.i+'">'+esc(x.e.title)+'（'+clsLabel({schoolId:x.e.schoolId,gradeId:x.e.gradeId,classId:x.e.classId})+'）</option>').join('')+
+      '</select></div></div><div id="cmp-one" style="margin-top:12px"></div>':'<div class="empty">所选范围内暂无成绩数据</div>')+'</div>'+
+   '</div>';
+  // 选择树
+  document.getElementById('cmp-sel').innerHTML=db.schools.map(s=>
+   '<div style="margin:6px 0"><label style="font-weight:600;cursor:pointer"><input type="checkbox" style="width:auto" '+(sSel(s.id)?'checked':'')+' onchange="cmpTog(\'s'+s.id+'\')"> 🏫 '+esc(s.name)+'</label>'+
+    '<span style="margin-left:16px">'+s.grades.map(g=>g.classes.map(c=>
+      '<label style="display:inline-flex;align-items:center;gap:4px;margin:2px 10px 2px 0;font-size:13px;cursor:pointer"><input type="checkbox" style="width:auto" '+(cSel(c.id)?'checked':'')+' onchange="cmpTog(\'c'+c.id+'\')">'+esc(g.name)+esc(c.name)+'</label>').join('')).join('')+'</span></div>').join('')+
+   '<div class="row" style="margin-top:10px"><button class="btn gray sm" onclick="cmpAll(true)">全选学校</button><button class="btn gray sm" onclick="cmpAll(false)">清空学校</button></div>';
+  if(!schools.length)return;
+  // ① 学校总对比
+  const schAgg=schools.map(s=>{const es=db.exams.filter(e=>e.schoolId===s.id&&cSel(e.classId)).map(e=>({e,a:computeExam(e)})).filter(x=>x.a.stats.n>0);
+    const got=es.reduce((t,x)=>t+x.a.stats.avg*x.a.stats.n,0),all=es.reduce((t,x)=>t+x.a.tot*x.a.stats.n,0);
+    const stu=students().filter(u=>u.schoolId===s.id&&cSel(u.classId)).length;
+    return {s,n:es.length,stu,rate:all?got/all*100:null}});
+  const schOk=schAgg.filter(x=>x.rate!=null);
+  barChart(document.getElementById('cv-sch'),schAgg.map(x=>x.s.name.length>6?x.s.name.slice(0,5)+'…':x.s.name),
+    schOk.length?schAgg.map(x=>Math.round((x.rate||0)*10)/10):schAgg.map(x=>0),{max:100,height:210,color:'#1a9e6c',fmt:v=>v+'%',barW:64});
+  document.getElementById('cmp-sch-t').innerHTML=htmlTable([['学校'],['参与考试数',1],['学生数',1],['加权平均得分率',1]],
+    schAgg.map(x=>[esc(x.s.name),x.n,x.stu,x.rate!=null?'<b class="kpi-green">'+pct(x.rate)+'</b>':'<span class="muted">暂无成绩</span>']));
+  // ①a 各校整体成绩情况（完整分析块：场次选择+KPI+折线+分布+分层+排名+知识板块+评估）
+  const schBlocks=schools.map((s,i)=>schAnaBlock(s.id,'cmpsa'+i,'cmpSchEx',cid=>cSel(cid),s.name));
+  document.getElementById('cmp-sch-ana').innerHTML=schBlocks.map(b=>b.html).join('');
+  schBlocks.forEach(b=>{if(b.draw)b.draw()});
+  // ①b 各校分数分层结构对比
+  const schTiers=schools.map(s=>{const pr=[];
+    db.exams.filter(e=>e.schoolId===s.id&&cSel(e.classId)).forEach(e=>{const tot=e.questions.reduce((t,q)=>t+q.score,0);
+      Object.keys(e.scores).forEach(su=>{const su2=uById(su);if(su2&&cSel(su2.classId)&&e.scores[su]&&e.scores[su].total!=null)pr.push(e.scores[su].total/tot)})});
+    return {s,tier:tierStats(pr)}});
+  const bestS=schOk.length?schOk.reduce((a,b)=>b.rate>a.rate?b:a):null;
+  const lowS=schOk.length>1?schOk.reduce((a,b)=>b.rate<a.rate?b:a):null;
+  const kk=(v,l,c)=>'<div style="flex:1;min-width:110px;background:#f6f9ff;border-radius:10px;padding:10px;text-align:center"><b style="font-size:19px;color:'+(c||'#1f6feb')+'">'+v+'</b><div class="small muted">'+l+'</div></div>';
+  document.getElementById('cmp-tiers').innerHTML=
+   '<div class="row" style="margin:8px 0;flex-wrap:wrap">'+
+   (bestS?kk(pct(bestS.rate)+'%','最优学校：'+esc(bestS.s.name),'#22a06b'):'')+
+   (bestS&&lowS?kk(Math.round((bestS.rate-lowS.rate)*10)/10+'%','校间最大差距','#d97706'):'')+
+   (lowS?kk(pct(lowS.rate)+'%','低分风险：'+esc(lowS.s.name),'#dc2626'):'')+
+   kk(schOk.reduce((t,x)=>t+x.n,0),'参与考试场次')+'</div>'+
+   schTiers.filter(x=>x.tier.n).map(x=>'<div style="margin:8px 0"><div class="small" style="display:flex;justify-content:space-between"><b>'+esc(x.s.name)+'</b><span class="muted">'+x.tier.n+' 人次 · 优秀 '+pct(x.tier.exc/x.tier.n*100)+'% · 良好 '+pct(x.tier.good/x.tier.n*100)+'% · 不及格 '+pct(x.tier.ex/x.tier.n*100)+'%</span></div>'+stackBar(x.tier)+'</div>').join('')+
+   tierLegend+
+   (bestS&&lowS?'<p class="small" style="margin-top:8px"><b>结论：</b>'+esc(bestS.s.name)+'整体领先（'+pct(bestS.rate)+'%），'+esc(lowS.s.name)+'偏低（'+pct(lowS.rate)+'%），建议重点帮扶其不及格占比较高的班级。</p>':'');
+  // ② 各校每场考试矩阵
+  const seen={},titles=[];
+  exSel.forEach(e=>{const k=e.title+'|'+e.date;if(!seen[k]){seen[k]=1;titles.push({title:e.title,date:e.date})}});
+  const best=t=>{let bv=-1,bi=-1;t.cells.forEach((c,i)=>{const v=parseFloat(c);if(!isNaN(v)&&v>bv){bv=v;bi=i}});return bi};
+  document.getElementById('cmp-matrix').innerHTML=titles.length?htmlTable(
+    [['考试'],['日期']].concat(schools.map(s=>[esc(s.name),1])),
+    titles.map(t=>{const cells=schools.map(s=>{const es=db.exams.filter(e=>e.schoolId===s.id&&cSel(e.classId)&&e.title===t.title&&e.date===t.date)
+        .map(e=>({e,a:computeExam(e)})).filter(x=>x.a.stats.n>0);
+      if(!es.length)return '—';
+      const got=es.reduce((acc,x)=>acc+x.a.stats.avg*x.a.stats.n,0),all=es.reduce((acc,x)=>acc+x.a.tot*x.a.stats.n,0);
+      return all?Math.round(got/all*1000)/10:'—'});
+      const bi=best({cells});
+      return [esc(t.title),t.date].concat(cells.map((c,i)=>i===bi&&cells.length>1?'<b style="color:var(--ok)">'+c+'% 🏆</b>':(typeof c==='number'?c+'%':'<span class="muted">'+c+'</span>')))}))+
+    '<p class="small muted" style="margin-top:8px">单元格 = 该校参与对比班级在该场考试的加权平均得分率；同一考试发布到多班时自动合并。无该场成绩显示「—」。</p>'
+    :'<div class="empty">所选范围内暂无考试</div>';
+  // ③ 班级逐场明细
+  if(exSel.length){
+    const per=exSel.map(e=>({e,a:computeExam(e)}));
+    barChart(document.getElementById('cv-cls'),per.map(x=>schoolName(x.e.schoolId).slice(0,4)+'·'+gradeOf(x.e.schoolId,x.e.gradeId)+classOf(x.e.schoolId,x.e.gradeId,x.e.classId)+'·'+x.e.title.slice(0,3)),
+      per.map(x=>rate(x.a)!=null?Math.round(rate(x.a)*10)/10:0),{max:100,height:240,fmt:v=>v+'%',color:'#1f6feb',barW:64,rotate:true});
+    document.getElementById('cmp-t').innerHTML=htmlTable([['学校·班级'],['考试'],['日期'],['人数',1],['平均分',1],['得分率',1],['最高',1],['最低',1]],
+      per.map(x=>[clsLabel({schoolId:x.e.schoolId,gradeId:x.e.gradeId,classId:x.e.classId}),esc(x.e.title),x.e.date,x.a.stats.n,
+       Math.round(x.a.stats.avg*10)/10,rate(x.a)!=null?pct(rate(x.a)):'—',x.a.stats.max,x.a.stats.min]));
+    const sel=document.getElementById('cmp-ex');
+    if(sel){sel.onchange=cmpOne;cmpOne()}
+  }
+}
+function cmpTog(k){ctx.cmpSel[k]=!ctx.cmpSel[k];vCompare()}
+function cmpAll(all){db.schools.forEach(s=>{ctx.cmpSel['s'+s.id]=all});vCompare()}
+function cmpOne(){
+  const sel=document.getElementById('cmp-ex');if(!sel)return;
+  const x=db.exams[+sel.value];if(!x)return;const a=computeExam(x);
+  const rows=a.rows.filter(r=>r.s!=null).sort((p,q)=>q.s-p.s).map((r,idx)=>[idx+1,esc(r.u.name),esc(r.u.studentNo||'—'),r.s,Math.round(r.s/a.tot*1000)/10+'%',
+    a.qAcc.filter(q=>r.wrong&&r.wrong.some(w=>w.no===q.q.no)).slice(0,2).map(q=>'<span class="pill">'+esc(q.q.kpId&&KP(q.q.kpId)?q.q.kpId&&KP(q.q.kpId).text:'未关联')+'</span>').join('')||'—']);
+  document.getElementById('cmp-one').innerHTML='<p class="small muted">'+esc(x.title)+' · '+clsLabel({schoolId:x.schoolId,gradeId:x.gradeId,classId:x.classId})+' · '+x.date+'</p>'+
+    (rows.length?htmlTable([['排名'],['姓名'],['学号'],['总分',1],['得分率',1],['主要失分点']],rows):'<div class="empty">该考试暂无成绩</div>');
+}
+
+/* ---------------- 9. 教材资料库（三端共用） ---------------- */
+function vLib(){ // 教材资料库（内置12本）+ 后期上传资料（教师/管理员）
+  (db.libFiles=db.libFiles||[]);
+  const canUp=me.role==='admin';
+  const libList=(db.libFiles||[]).slice().reverse();
+  document.getElementById('view').innerHTML=
+   (canUp?'<div class="card"><h3>📎 上传资料（后期扩充资料库）</h3>'+
+    '<div class="row" style="align-items:flex-end"><div style="flex:1;min-width:220px"><label>归属书目</label><select id="lib-book"><option value="">通用 / 其他资料</option>'+
+     KB.map((b,i)=>'<option value="'+i+'">'+esc(b.title)+'</option>').join('')+'</select></div>'+
+    '<div style="flex:1;min-width:170px"><label>章节 / 备注（可选）</label><input id="lib-chap" placeholder="如：第三章 种群"></div></div>'+
+    '<input type="file" multiple accept=".pdf,.docx,.txt,.csv,.md,image/*" style="margin-top:10px" onchange="upLibFile(this)">'+
+    '<p class="small muted" style="margin-top:6px">PDF（文字版自动提取文字）、Word(.docx)、TXT/CSV/Markdown 直接保存文字；图片压缩后存预览；其他类型仅存档文件名。单份资料最多保存前2万字，可随时删除。</p></div>':'')+
+   '<div class="card"><h3>📚 教材知识点资料库（12 本内置 + 上传资料合并）</h3>'+
+    '<p class="small muted" style="margin-bottom:12px">内置书目用于判卷知识点定位与整改建议；上传资料按「归属书目」自动合并进对应书籍（未选书目的归入「其他上传资料」）。错题复盘、刷题与个人报告解析会自动引用内容相关的上传资料。</p>'+
+    (()=>{const fileRow=f=>'<details style="margin:8px 0"><summary style="cursor:pointer;padding:6px;background:#f8fafd;border-radius:8px">📄 '+esc(f.name)+
+      '　<span class="small muted">'+(f.bookId!==''&&KB[+f.bookId]?'《'+esc(KB[+f.bookId].title)+'》':'通用')+(f.chapter?' · '+esc(f.chapter):'')+' · '+f.date+' · '+esc(f.by||'')+' · '+((f.size||0)/1024).toFixed(0)+'KB'+(f.trunc?'（文字已截断保存前2万字）':'')+'</span>'+
+      (me.role==='admin'||f.by===me.name?' <a style="cursor:pointer;color:var(--bad)" onclick="delLibFile(\''+f.id+'\')">删除</a>':'')+'</summary>'+
+      '<div style="padding:10px 14px">'+(f.preview?'<img src="'+f.preview+'" style="max-width:320px;border-radius:8px;border:1px solid var(--line)">':'')+
+      (f.text?'<pre style="white-space:pre-wrap;max-height:260px;overflow:auto;font-size:12px;color:var(--tx2)">'+esc(f.text)+'</pre>':(f.preview?'':'<p class="small muted">该文件仅存档文件名，无文字内容。</p>'))+'</div></details>';
+     return KB.map(b=>{const ups=(db.libFiles||[]).filter(f=>f.bookId!==''&&KB[+f.bookId]===b);
+      return '<details style="margin-bottom:10px"><summary style="cursor:pointer;font-weight:600;padding:8px;background:#f4f7fc;border-radius:8px">《'+esc(b.title)+'》　<span class="tag blue">'+esc(b.short)+'</span>'+
+       (ups.length?'　<span class="tag green">📎 含上传资料 '+ups.length+' 份</span>':'')+'</summary>'+
+       '<div style="padding:10px 14px">'+b.chapters.map(c=>'<div style="margin:6px 0"><b class="small">▸ '+esc(c.name)+'</b>　'+c.kps.map(k=>'<span class="pill">'+esc(k)+'</span>').join('')+'</div>').join('')+
+       '<p class="small muted">📄 原始 PDF：'+esc(b.file)+'（存于教师端电脑资料目录，系统内置其知识点结构用于分析）</p>'+
+       (ups.length?'<div style="margin-top:8px"><b class="small">📎 上传资料（点击展开查看内容）</b>'+ups.map(fileRow).join('')+'</div>':'')+'</div></details>'}).join('')+
+      (()=>{const gen=(db.libFiles||[]).filter(f=>f.bookId===''||!KB[+f.bookId]);
+       return gen.length?'<details style="margin-bottom:10px"><summary style="cursor:pointer;font-weight:600;padding:8px;background:#f4f7fc;border-radius:8px">🗂 其他上传资料　<span class="tag orange">'+gen.length+' 份</span></summary><div style="padding:10px 14px">'+gen.map(fileRow).join('')+'</div></details>':''})()})()+
+   '</div>';
+}
+function upLibFile(input){ // 上传资料入库：提取文字/存预览，与书目、章节关联
+  if(!me||me.role!=='admin')return toast('仅管理员可上传资料');
+  const bid=document.getElementById('lib-book').value;
+  const chap=(document.getElementById('lib-chap').value||'').trim();
+  if(!input.files||!input.files.length)return toast('请先选择文件');
+  let n=0;
+  [...input.files].forEach(f=>{
+    const ext=(f.name.toLowerCase().split('.').pop()||'');
+    const entry={id:uid(),name:f.name,bookId:bid||'',chapter:chap,size:f.size,date:new Date().toISOString().slice(0,10),by:me.name};
+    (db.libFiles=db.libFiles||[]).push(entry);n++;
+    const done=()=>{save()};
+    if(ext==='pdf'){loadPdfText(f,t=>{if(t){entry.text=t.slice(0,20000);if(t.length>20000)entry.trunc=true}done();if(!t)toast(f.name+'：未能提取文字（扫描版/无内容），仅存档');vLib()})}
+    else if(ext==='docx'){loadScript(CDN.mammoth,ok=>{if(!ok){done();vLib();return toast('Word解析库加载失败，仅存档文件名')}
+      readFileAs(f,'array',buf=>{try{mammoth.extractRawText({arrayBuffer:buf}).then(r=>{const t=(r.value||'').trim();
+        if(t){entry.text=t.slice(0,20000);if(t.length>20000)entry.trunc=true}done();vLib()}).catch(()=>{done();vLib()})}catch(err){done();vLib()}})})}
+    else if(ext==='txt'||ext==='csv'||ext==='md'){readFileAs(f,'text',t=>{if(t){entry.text=t.slice(0,20000);if(t.length>20000)entry.trunc=true}done();vLib()})}
+    else if(f.type&&f.type.startsWith('image/')){compressImage(f,1200,0.72,d=>{entry.preview=d;done();vLib()})}
+    else{done();vLib()}
+  });
+  if(n)toast('已开始处理 '+n+' 份资料…');
+}
+function delLibFile(id){const f=(db.libFiles||[]).find(x=>x.id===id);if(!f)return;
+  if(me.role!=='admin'&&f.by!==me.name)return toast('只能删除自己上传的资料');
+  if(!confirm('确认删除资料「'+f.name+'」？'))return;
+  db.libFiles=db.libFiles.filter(x=>x.id!==id);save();toast('已删除');vLib()}
+
+/* ---------------- 错题复盘 + 线上刷题（学生端） ---------------- */
+function wrongEntries(sid){ // 汇总该生全部考试错题（含多选半对，got<score 即入本）
+  const out=[];
+  db.exams.forEach(e=>{const rec=e.scores&&e.scores[sid];if(!rec)return;
+    const row=(computeExam(e).rows||[]).find(r=>r.u.id===sid);if(!row||!row.wrong)return;
+    const sm=stemMap(e),am=analysisMap(e);
+    row.wrong.forEach(q=>{const got=rec.q[q.no];if(got==null)return;
+      out.push({key:e.id+'#'+q.no,exId:e.id,ex:e.title,date:e.date,no:q.no,got,score:q.score,ans:(q.ans||'').toUpperCase(),
+        kp:kpSafe(q.kpId),stem:(sm[q.no]||'').trim(),jx:(am.m[q.no]||'').trim()})})});
+  return out.sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.no-a.no);
+}
+function wrongLog(){db.wrongLog=db.wrongLog||{};return db.wrongLog[me.id]=db.wrongLog[me.id]||{}}
+function mastered(en){const l=wrongLog()[en.key];return !!(l&&l.streak>=2)}
+function vReview(){ // 学生错题本：归纳 + 刷题
+  if(me.role!=='student')return;
+  const all=wrongEntries(me.id);
+  if(ctx.revEx===undefined)ctx.revEx='';
+  const list=all.filter(en=>!ctx.revEx||en.exId===ctx.revEx);
+  const todo=list.filter(en=>!mastered(en)),mas=list.filter(mastered);
+  const exams=[...new Set(all.map(en=>en.exId))];
+  document.getElementById('view').innerHTML=
+   '<div class="card"><h3>📕 我的错题本</h3>'+
+   '<div class="row" style="align-items:center;flex-wrap:wrap"><span class="tag blue">错题 '+list.length+'</span><span class="tag orange">待复习 '+todo.length+'</span><span class="tag green">已掌握 '+mas.length+'</span>'+
+   '<select onchange="ctx.revEx=this.value;renderApp()" style="max-width:260px"><option value="">全部考试</option>'+
+   exams.map(x=>{const en=all.find(z=>z.exId===x);return '<option value="'+x+'"'+(ctx.revEx===x?' selected':'')+'>'+esc(en.ex)+'（'+all.filter(z=>z.exId===x).length+' 题）</option>'}).join('')+'</select>'+
+   (todo.some(en=>en.ans)?'<button class="btn" onclick="prStart(false)">▶ 开始刷题（待复习 '+todo.filter(en=>en.ans).length+' 题）</button>':'')+
+   (list.some(en=>en.ans)?'<button class="btn ghost" onclick="prStart(true)">🔁 全部重刷（'+list.filter(en=>en.ans).length+' 题）</button>':'')+'</div>'+
+   '<p class="small muted" style="margin-top:8px">刷题规则：凭记忆点选选项后提交，多选题需选中全部正确选项；连续答对 2 次自动标记「已掌握」，答错回到待复习。每场考试判分后，错题（含多选半对）自动归入错题本。</p></div>'+
+   (list.length?'<div class="card" style="margin-top:12px"><h3>🗂 错题归纳</h3>'+list.map(en=>{
+     const l=wrongLog()[en.key]||{};
+     return '<details style="margin-bottom:10px"><summary style="cursor:pointer;padding:8px;background:#f8fafd;border-radius:8px">'+
+      '<b>'+esc(en.ex)+' · 第'+en.no+'题</b>　<span class="tag red">得 '+en.got+' / '+en.score+'</span>　'+
+      (mastered(en)?'<span class="tag green">已掌握</span>':(l.streak?'<span class="tag orange">连对 '+l.streak+'/2</span>':'<span class="tag blue">待复习</span>'))+'</summary>'+
+      '<div style="padding:10px 14px">'+
+      (en.stem?'<p class="small" style="line-height:1.8"><b>题干：</b>'+esc(en.stem.slice(0,300))+(en.stem.length>300?'…':'')+'</p>':'')+
+      '<p class="small">考点：<span class="pill">'+esc(en.kp.text)+'</span><span class="pill">'+esc(en.kp.book.short)+'·'+esc(en.kp.chapter)+'</span>　<b>正确答案：'+esc(ansLetters(en)||'—')+'</b></p>'+
+      (en.jx?'<p class="small" style="line-height:1.8"><b>教师解析：</b>'+esc(en.jx)+'</p>':'<p class="small" style="line-height:1.8"><b>资料库解析：</b>'+esc(suggestionFor(en.kp.id,en.score?(en.score-en.got)/en.score:1))+'</p>')+
+    libRefsHtml(en.kp.id)+
+      '</div></details>'}).join('')+'</div>'
+    :'<div class="card" style="margin-top:12px"><div class="empty">暂无错题——继续保持！有新考试判分后，错题会自动归入错题本。</div></div>');
+}
+function ansLetters(en){ // 答案键归一：TTTF→ABC；√×→原样；普通字母→原样
+  const a=(en.ans||'').toUpperCase();
+  if(a.length===4&&/^[TFX√×]+$/i.test(a))return 'ABCD'.split('').filter((l,i)=>/[T√]/i.test(a[i])).join('');
+  if(a.includes('√')||a.includes('×'))return a.replace(/[^√×]/g,'');
+  return a.replace(/[^A-Z0-9]/g,'');
+}
+function prStart(allFlag){ // 开始刷题：仅刷有标准答案的题
+  const src=wrongEntries(me.id).filter(en=>en.ans&&(!ctx.revEx||en.exId===ctx.revEx)&&(!mastered(en)||allFlag));
+  if(!src.length)return toast('没有可刷的题目');
+  ctx.pr={list:src,idx:0,pick:[],right:0,wrong:0,answered:null};prRender();
+}
+function prOpts(en){const L=ansLetters(en);return L.includes('√')||L.includes('×')?['√','×']:['A','B','C','D']}
+function prRender(){
+  const p=ctx.pr,en=p.list[p.idx],answered=p.answered,letters=prOpts(en);
+  document.getElementById('view').innerHTML=
+   '<div class="card"><div class="row" style="align-items:center;flex-wrap:wrap"><b>▶ 刷题模式</b><span class="small muted">第 '+(p.idx+1)+' / '+p.list.length+' 题 · 已答对 '+p.right+' · 答错 '+p.wrong+'</span>'+
+   '<button class="btn gray sm" onclick="ctx.pr=null;renderApp()">退出刷题</button></div></div>'+
+   '<div class="card" style="margin-top:12px"><p class="small muted">'+esc(en.ex)+' · 第'+en.no+'题 · 满分 '+en.score+' 分'+(ansLetters(en).length>1?'（多选）':'')+'</p>'+
+   (en.stem?'<p style="line-height:1.9;font-size:15px">'+esc(en.stem.slice(0,400))+(en.stem.length>400?'…':'')+'</p>':'<p class="small muted">（该题无题干存档，请凭考试记忆作答）</p>')+
+   '<div style="margin:14px 0">'+letters.map(l=>'<button class="btn '+(p.pick.includes(l)?'':'ghost')+'" style="margin:4px;min-width:64px" onclick="prTog(\''+l+'\')">'+l+'</button>').join('')+'</div>'+
+   (!answered?'<button class="btn" onclick="prSubmit()">提交答案</button>':
+    '<div style="margin-top:12px;padding:12px;border-radius:10px;background:'+(p.ok?'#e6f7f0':'#fdeaea')+'">'+
+    (p.ok?'<b style="color:#1a9e6c">✓ 回答正确！'+(mastered(en)?'（已连续答对 2 次，标记为「已掌握」）':'（再答对 1 次即标记掌握）')+'</b>':'<b style="color:#dc2626">✗ 回答错误</b>　正确答案：<b>'+esc(ansLetters(en)||en.ans)+'</b>')+
+    '<p class="small" style="margin-top:6px">考点：<span class="pill">'+esc(en.kp.text)+'</span><span class="pill">'+esc(en.kp.book.short)+'·'+esc(en.kp.chapter)+'</span></p>'+
+    (en.jx?'<p class="small" style="line-height:1.8"><b>教师解析：</b>'+esc(en.jx)+'</p>':'<p class="small" style="line-height:1.8"><b>资料库解析：</b>'+esc(suggestionFor(en.kp.id,en.score?(en.score-en.got)/en.score:1))+'</p>')+
+    libRefsHtml(en.kp.id)+
+    '<button class="btn" style="margin-top:10px" onclick="prNext()">'+(p.idx+1<p.list.length?'下一题 →':'完成刷题')+'</button></div>')+'</div>';
+}
+function prTog(l){const p=ctx.pr;if(p.answered)return;const i=p.pick.indexOf(l);if(i>=0)p.pick.splice(i,1);else p.pick.push(l);prRender()}
+function prSubmit(){
+  const p=ctx.pr,en=p.list[p.idx];
+  const norm=s=>String(s||'').replace(/[^A-Z0-9√×]/gi,'').toUpperCase().split('').sort().join('');
+  p.ok=norm(p.pick.join(''))===norm(ansLetters(en));
+  if(p.ok)p.right++;else p.wrong++;
+  const log=wrongLog(),l=log[en.key]=log[en.key]||{r:0,w:0,streak:0};
+  l.last=new Date().toISOString().slice(0,10);
+  if(p.ok){l.r++;l.streak=(l.streak||0)+1}else{l.w++;l.streak=0}
+  save();p.answered=true;prRender();
+}
+function prNext(){
+  const p=ctx.pr;
+  if(p.idx+1<p.list.length){p.idx++;p.pick=[];p.answered=null;prRender()}
+  else{const r=p.right,w=p.wrong;ctx.pr=null;renderApp();
+    toast('刷题完成：答对 '+r+' 题、答错 '+w+' 题。连续答对 2 次的题已标记为「已掌握」')}
+}
+
+/* ---------------- 10. 教师端 ---------------- */
+function vDash(){if(me.role==='teacher')return vTDash();vADash()}
+function vTDash(){
+  const exs=examsOfTeacher(me).slice().reverse();
+  document.getElementById('view').innerHTML=
+  '<div class="grid4">'+
+   '<div class="stat"><b class="kpi-blue">'+exs.length+'</b><span>已建考试</span></div>'+
+   '<div class="stat"><b class="kpi-green">'+students().filter(u=>u.classId===me.classId).length+'</b><span>本班学生</span></div>'+
+   '<div class="stat"><b class="kpi-orange">'+db.invites.filter(i=>i.createdBy===me.id&&!i.usedBy).length+'</b><span>可用学生邀请码</span></div>'+
+   '<div class="stat"><b class="kpi-red">'+(exs.length?Math.round(exs.reduce((s,e)=>s+computeExam(e).stats.avg,0)/exs.length*10)/10:0)+'</b><span>历次平均分</span></div></div>'+
+  '<div class="card" style="margin-top:16px"><h3>📋 考试列表（点击进入判卷与分析）</h3>'+
+   (exs.length?htmlTable([['考试'],['日期'],['题目数'],['满分',1],['已录人数',1],['平均分',1],[null]],
+    exs.map(e=>{const a=computeExam(e);return ['<a style="cursor:pointer;font-weight:600" onclick="openExam(\''+e.id+'\')">'+esc(e.title)+'</a>',e.date,e.questions.length,a.tot,a.stats.n,Math.round(a.stats.avg*10)/10,
+     '<button class="btn sm" onclick="openExam(\''+e.id+'\')">进入</button>']})):'<div class="empty">还没有考试，请先「新建考试/上传试卷」</div>')+'</div>';
+}
+function vExamNew(){
+  const view=document.getElementById('view');
+  const myS=schById(me.schoolId);
+  const clsOpts=myS?myS.grades.map(g=>g.classes.map(c=>'<option value="'+g.id+'|'+c.id+'"'+(c.id===me.classId?' selected':'')+'>'+esc(g.name)+' '+esc(c.name)+'</option>').join('')).join(''):'';
+  view.innerHTML='<div class="card"><h3>📝 发布考试（本学校内选择班级）</h3>'+
+  '<div class="row"><div style="flex:1;min-width:180px"><label>考试名称</label><input id="ex-title" placeholder="如：生物竞赛第3次周测"></div>'+
+  '<div style="flex:0 0 150px"><label>科目</label><select id="ex-subject"><option>生物竞赛</option><option>生物</option><option>化学竞赛</option><option>物理竞赛</option></select></div>'+
+  '<div style="flex:0 0 150px"><label>日期</label><input id="ex-date" type="date" value="'+new Date().toISOString().slice(0,10)+'"></div>'+
+  '<div style="flex:0 0 170px"><label>发布到</label><select id="ex-cls">'+clsOpts+'</select></div></div>'+
+  '<button class="btn" style="margin-top:12px" onclick="createExam()">创建考试</button><p class="small muted" style="margin-top:6px">默认发布到您任教的班级（'+esc(clsLabel(me))+'），也可选择本校其他班级；跨学校统一发布请由管理员在「📢 统一发布考试」操作。</p></div>'+
+  '<div class="card"><h3>📁 我的考试（进入后上传试卷/答案/答题卡、设置题目、批量录分）</h3>'+
+   (examsOfTeacher(me).length?htmlTable([['考试'],['日期'],[null]],examsOfTeacher(me).slice().reverse().map(e=>[esc(e.title),e.date,'<button class="btn sm" onclick="openExam(\''+e.id+'\')">进入判卷</button>'])):'<div class="empty">暂无考试</div>')+'</div>';
+}
+function createExam(){
+  const t=(document.getElementById('ex-title').value||'').trim();if(!t)return toast('请填写考试名称');
+  const val=(document.getElementById('ex-cls').value||'').split('|');
+  if(!val[1])return toast('您所在学校还没有班级，请联系管理员创建');
+  db.exams.push({id:uid(),title:t,subject:document.getElementById('ex-subject').value,date:document.getElementById('ex-date').value,
+    teacherId:me.id,schoolId:me.schoolId,gradeId:val[0],classId:val[1],
+    files:{template:[],sheetTmpl:[],answer:[],analysis:[],sheetStu:[]},questions:[],scores:{}});
+  save();toast('考试已创建，请进入并上传试卷、设置题目');openExam(db.exams[db.exams.length-1].id);
+}
+let curExam=null;
+function openExam(id){ctx.exam=id;ctx.examTab='files';renderExamPage()}
+function renderExamPage(){
+  const e=db.exams.find(x=>x.id===ctx.exam);if(!e){page='dash';renderApp();return}
+  const isOwner=me.role==='admin'||!e.teacherId||e.teacherId===me.id;
+  if(!isOwner)ctx.examTab='ana';
+  const tabs=isOwner?[['files','📎 试卷 / 答案 / 答题卡'],['qs','🧮 题目与知识点'],['enter','✍️ 批量录分与核对'],['ana','📊 判卷分析']]:[['ana','📊 判卷分析']];
+  document.getElementById('view').innerHTML=
+  '<div class="card"><h3>'+esc(e.title)+'　<span class="tag blue">'+esc(e.subject)+'</span> <span class="tag gray">'+e.date+'</span> <span class="tag green">'+esc(clsLabel({schoolId:e.schoolId,gradeId:e.gradeId,classId:e.classId}))+'</span>'+
+  (!isOwner?'<span class="tag gray">仅查看（'+esc((uById(e.teacherId)||{}).name||'未分配教师')+'负责判卷）</span>':'')+
+  (isOwner?'<button class="btn red sm" style="float:right" onclick="delExam()">删除考试</button>':'')+'</h3>'+
+  '<div class="small" style="color:var(--tx2);margin-top:8px">判分流程：① 搭建答题卡框架（题目/分值/知识点）→ ② 匹配标准答案 → ③ 按分值匹配学生答题卡作答得分（批量录分）→ ④ 生成报告（解析优先引用已上传解析，未上传则按教材资料库）</div>'+
+  '<div class="tabs" style="margin-top:10px">'+tabs.map(t=>'<button class="'+(ctx.examTab===t[0]?'on':'')+'" onclick="ctx.examTab=\''+t[0]+'\';renderExamPage()">'+t[1]+'</button>').join('')+'</div>'+
+  '<div id="exbody"></div></div>';
+  const B={files:exFiles,qs:exQs,enter:exEnter,ana:exAna};
+  try{(B[ctx.examTab]||exFiles)(e)}
+  catch(err){document.getElementById('exbody').innerHTML='<div class="empty">⚠️ 页面渲染出错：'+esc(String((err&&err.message)||err))+'<br><span class="small">请将本提示截图反馈，数据不会丢失。</span></div>'}
+}
+function delExam(){const e=db.exams.find(x=>x.id===ctx.exam);if(!confirm('确认删除考试「'+e.title+'」及其全部成绩？'))return;
+  db.exams=db.exams.filter(x=>x.id!==e.id);save();toast('已删除');page='dash';renderApp()}
+function exFiles(e){
+  const fileTag=(k,f,i)=>f.type==='text'
+   ?'<details class="filetag"><summary style="cursor:pointer">📄 '+esc(f.name)+'（文字录入，点击展开）　<a style="cursor:pointer;color:var(--bad)" onclick="event.preventDefault();rmFile(\''+k+'\','+i+')">移除</a></summary><pre style="white-space:pre-wrap;margin-top:8px;font-size:12px;color:var(--tx2);max-height:220px;overflow:auto">'+esc(f.text||'')+'</pre></details>'
+   :f.extracting?'<div class="filetag"><span>📄 '+esc(f.name)+'　<span class="muted">'+(f.ocr?'OCR 识别中…（首次使用需下载约10MB中文识别库，请耐心等待）':'文字提取中…')+'</span></span><a style="cursor:pointer;color:var(--bad)" onclick="rmFile(\''+k+'\','+i+')">移除</a></div>'
+   :f.text?'<details class="filetag"><summary style="cursor:pointer">📄 '+esc(f.name)+'（'+(f.ocr?'OCR 识别':'已提取')+'文字，点击展开核对）　<a style="cursor:pointer;color:var(--bad)" onclick="event.preventDefault();rmFile(\''+k+'\','+i+')">移除</a></summary><pre style="white-space:pre-wrap;margin-top:8px;font-size:12px;color:var(--tx2);max-height:220px;overflow:auto">'+esc(f.text)+'</pre></details>'
+   :f.scanOnly?'<div class="filetag"><span>📄 '+esc(f.name)+'　<span class="muted">未能提取文字（扫描件OCR失败/无内容/加载失败），仅存档名</span></span><a style="cursor:pointer;color:var(--bad)" onclick="rmFile(\''+k+'\','+i+')">移除</a></div>'
+   :(f.type==='pdf'&&!f.preview)?'<div class="filetag"><span>📄 '+esc(f.name)+'　<span class="muted">'+(f.size/1024).toFixed(0)+' KB（旧上传未提取文字，建议移除后重新上传）</span></span><a style="cursor:pointer;color:var(--bad)" onclick="rmFile(\''+k+'\','+i+')">移除</a></div>'
+   :'<div class="filetag"><span>📄 '+esc(f.name)+'　<span class="muted">'+(f.size/1024).toFixed(0)+' KB'+(f.compressed?'（已压缩）':(f.preview?'':'（大文件仅存档名）'))+'</span></span><a style="cursor:pointer;color:var(--bad)" onclick="rmFile(\''+k+'\','+i+')">移除</a></div>'+(f.preview?'<img src="'+f.preview+'" style="max-width:280px;margin-top:6px;border-radius:8px;border:1px solid var(--line)">':'');
+  const sect=(k,label,hint)=>'<div style="margin-bottom:14px"><b>'+label+'</b> <span class="small muted">'+hint+'</span>'+
+   '<input type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv" style="margin-top:6px" onchange="upFile(\''+k+'\',this)">'+
+   '<div id="fl-'+k+'">'+(e.files[k].length?e.files[k].map((f,i)=>fileTag(k,f,i)).join(''):'<div class="small muted" style="margin-top:6px">尚未上传</div>')+'</div></div>';
+  document.getElementById('exbody').innerHTML=
+  '<div class="grid2"><div>'+sect('template','① 试卷模板（空白试卷）','上传未作答的空白试卷，用于存档与命题对照')+'</div>'+
+  '<div>'+sect('sheetTmpl','② 答题卡模板（空白答题卡）','上传班级使用的空白答题卡，作为答题卡框架的样式依据')+'</div></div>'+
+  '<div class="grid2"><div>'+sect('answer','③ 答案（带答案的答题卡）','上传标注了标准答案的答题卡，与题目框架逐题匹配')+'</div>'+
+  '<div>'+sect('analysis','④ 试题解析','上传逐题解析文件；学生报告将优先引用此处内容，未上传时按教材资料库生成')+'</div></div>'+
+  sect('sheetStu','⑤ 学生答题卡','批量上传学生作答后的答题卡（支持 Word(.docx)/PDF/图片；PDF文字版直接提取，扫描版与照片自动OCR识别）')+
+  '<div class="grid3"><div><label>✏️ 试卷文字录入</label><textarea id="tx-template" rows="2" placeholder="粘贴试卷文字内容，存档备查"></textarea><button class="btn sm" style="margin-top:6px" onclick="saveTextEntry(\'template\')">保存试卷文字</button></div>'+
+  '<div><label>✏️ 答案文字录入</label><textarea id="tx-answer" rows="2" placeholder="支持「第1题：B」等逐题格式"></textarea><button class="btn sm" style="margin-top:6px" onclick="saveTextEntry(\'answer\')">保存答案文字</button></div>'+
+  '<div><label>✏️ 解析文字录入（优先于资料库）</label><textarea id="tx-analysis" rows="2" placeholder="逐题录入，如：第1题：本题考查线粒体功能，答案B，因为…"></textarea><button class="btn sm" style="margin-top:6px" onclick="saveTextEntry(\'analysis\')">保存解析文字</button></div></div>'+
+  '<hr><p class="small muted">判分流程：上传③答案、⑤学生答题卡 → 点「一键判卷」自动完成：解析标准答案（支持「第1题：B」逐题格式和「题号行+答案行」表格式答题卡）→ 自动搭建/补齐题目框架 → 逐题比对判分 → 分数直接写入「批量录分」→ 「判卷分析」查看报告（解析优先引用④已上传解析，未上传则按教材资料库生成）。主观题或识别失败的答题卡可在「批量录分」明细中手动补录。</p>'+
+  '<div class="row" style="align-items:center"><button class="btn" onclick="oneClickJudge()">🚀 一键判卷</button><span class="small muted">上传完上方文件后直接点这里：自动提取答案、匹配答题卡、判分</span><span id="ma-status" class="small muted" style="margin-left:8px"></span></div>';
+}
+function letterSeq(t){ // 收集文本中按顺序出现的 T/F 判断答案（表格式答题卡）
+  const out=[];
+  (t||'').split(/\s+/).forEach(tok=>{
+    const u=tok.toUpperCase();
+    if(/^[TF√X×]+$/.test(u))for(const ch of u)out.push(ch==='X'?'×':ch);
+  });
+  return out;
+}
+function gridParse(items){ // 按坐标把字母块对齐到题号列（机读卡版式：题号行上方、字母行下方，字母词可能被拆成多块）
+  if(!items||items.length<20)return null;
+  const nums=[],lets=[];
+  items.forEach(it=>{const s=String(it.s||'').toUpperCase();
+    if(/^\d{1,2}$/.test(s)&&+s>=1&&+s<=80)nums.push({n:+s,x:it.x,y:it.y});
+    else if(/^[TF√X×]{1,4}$/.test(s))lets.push({s:s.replace(/X/g,'×'),x:it.x,y:it.y})});
+  if(nums.length<10||lets.length<10)return null;
+  const qmap={};const rows={};
+  lets.forEach(l=>{const k2=(l.p||1)+':'+Math.round(l.y/12);(rows[k2]=rows[k2]||[]).push(l)});
+  Object.keys(rows).forEach(k2=>{
+    const row=rows[k2].sort((a,b)=>a.x-b.x);
+    const ly=row[0].y;
+    const cand=nums.filter(nn=>nn.y<ly+8&&ly-nn.y<60); // 正上方最近的一行题号
+    if(!cand.length)return;
+    row.forEach(l=>{ // 每个字母块归入同行 x 最近（列距约42px，容差22px）的题号列
+      let best=null,bd=1e9;
+      cand.forEach(nn=>{const d=Math.abs(l.x-nn.x);if(d<bd){bd=d;best=nn}});
+      if(best&&bd<=22)qmap[best.n]=(qmap[best.n]||'')+l.s;
+    });
+  });
+  const nos=Object.keys(qmap).map(Number).filter(n=>qmap[n].length>=2&&qmap[n].length<=5);
+  if(nos.length<10)return null;
+  const maxN=Math.max(...nos);const arr=[];
+  for(let i=1;i<=maxN;i++)arr.push(qmap[i]||'');
+  return arr;
+}
+function parseSheetStudent(f,g){ // 从单个答题卡文件文字中解析学生与作答；g=4 时每4个字母为1题（每选项T/F）
+  const t=f.text||'';if(!t)return null;
+  const base=f.name.replace(/\.[^.]+$/,'');
+  const noM=t.match(/学\s*号\s*[:：]?\s*(\d{2,12})/);
+  const nmM=t.match(/姓\s*名\s*[:：]?\s*([\u4e00-\u9fa5]{2,4})/);
+  const name=nmM?nmM[1]:(base.replace(/\d+/g,'').trim()||base);
+  const no=noM?noM[1]:'';
+  const grid=gridParse(f.items); // 优先坐标网格：文本流顺序不可靠（列式排版会被打乱）
+  if(grid&&grid.filter(x=>x.length===4).length>=Math.max(10,grid.length*0.8))
+    return {no,name,answers:grid};
+  const norm=s=>s.toUpperCase().replace('对','√').replace('错','×').replace(/[^A-Z0-9√×]/g,'');
+  const ans={};let m;
+  let re=/第\s*(\d+)\s*题\s*[:：]?\s*([A-Za-z√×对错TF]{1,4})/g;
+  while((m=re.exec(t)))ans[+m[1]]=norm(m[2]);
+  re=/(\d{1,3})\s*[\.、：:]\s*([A-Za-z√×TF]{1,4})(?![\dA-Za-z])/g;
+  while((m=re.exec(t))){const no2=+m[1];if(!ans[no2])ans[no2]=norm(m[2])}
+  const nos=Object.keys(ans).map(Number);
+  if(nos.length>2){const maxNo=Math.max(...nos);const arr=[];
+    for(let i=1;i<=maxNo;i++)arr.push(ans[i]||'');
+    return {no,name,answers:arr}}
+  const tk=letterToks(t);
+  const n=tk.nums.length?Math.max(...tk.nums):0;
+  const asc=tk.nums.length===n&&tk.nums.every((v,i)=>v===i+1);
+  if(asc&&tk.groups.length===n&&tk.groups.every(x=>x.length===4)){
+    return {no,name,answers:tk.groups.slice()}; // 题号与答案组直接对齐
+  }
+  const seq=letterSeq(t);
+  if(seq.length<3)return {no,name,answers:null};
+  let gg=g||1;
+  if(gg!==4){if(n&&seq.length===n*4)gg=4;else if(n&&seq.length===n)gg=1}
+  if(gg===4){const arr=[];for(let i=0;i+4<=seq.length;i+=4)arr.push(seq.slice(i,i+4).join(''));
+    return arr.length?{no,name,answers:arr}:{no,name,answers:null}}
+  return {no,name,answers:seq};
+}
+function saveTextEntry(k){const e=db.exams.find(x=>x.id===ctx.exam);
+  const t=(document.getElementById('tx-'+k).value||'').trim();if(!t)return toast('请先输入文字内容');
+  const nm={template:'试卷文字录入',answer:'答案文字录入',analysis:'试题解析文字录入'}[k]||'文字录入';
+  e.files[k].push({name:nm+'.txt',type:'text',size:t.length,text:t});
+  save();toast('文字内容已存档'+(k==='analysis'?'，学生报告将按题号引用':''));renderExamPage()}
+function ansGroup(e){ // 判断答题卡类型：1=每题1个字母；4=每题4个字母（每选项涂T/F的多选题卡）
+  const all=[].concat((e.files&&e.files.template)||[],(e.files&&e.files.answer)||[],(e.files&&e.files.sheetStu)||[],(e.files&&e.files.analysis)||[]).filter(f=>f.text).map(f=>f.text||'').join('\n');
+  if(/(每[题小题]\s*4\s*个?选项|答对\s*[0-4]\s*个选项得|4\s*个选项|4个选项)/.test(all))return 4;
+  if(/答案\s*[：:]\s*[TF√X×]{4}/.test(all))return 4;
+  return 1;
+}
+function letterToks(t){ // 拆出题号 token 与 T/F 组 token（保留分组，便于按题号对齐）
+  const nums=[],groups=[];
+  (t||'').split(/\s+/).forEach(tok=>{
+    const u=tok.toUpperCase();
+    if(/^[TF√X×]+$/.test(u))groups.push(u.replace(/X/g,'×'));
+    else if(/^\d{1,3}$/.test(tok))nums.push(+tok);
+  });
+  return {nums,groups};
+}
+function parseAnswerKey(e,g){
+  g=g||ansGroup(e);
+  const texts=((e.files&&e.files.answer)||[]).filter(f=>f.text).map(f=>f.text||'').join('\n');
+  const key={};let m;
+  let re=/第\s*(\d+)\s*题\s*[:：]?\s*([A-Za-z√×对错TF0-9]{1,6})/g;
+  while((m=re.exec(texts)))key[+m[1]]=m[2].toUpperCase().replace('对','√').replace('错','×');
+  re=/(\d{1,2})\s*[\.、，,]\s*([A-Za-z√×TF0-9]{1,6})(?![\dA-Za-z])/g;
+  while((m=re.exec(texts))){const no=+m[1];if(no>0&&!key[no]&&!/^[0-9]+$/.test(m[2]))key[no]=m[2].toUpperCase().replace('对','√').replace('错','×')}
+  if(!Object.keys(key).length){ // 表格式答题卡（题号行+答案行）：优先按题号直接对齐，否则取最长序列
+    let best=null;
+    ((e.files&&e.files.answer)||[]).filter(f=>f.text).forEach(f=>{const tk=letterToks(f.text);
+      if(!best||tk.groups.length>best.groups.length)best=tk});
+    if(best&&best.groups.length){
+      const n=best.nums.length?Math.max(...best.nums):0;
+      const asc=best.nums.length===n&&best.nums.every((v,i)=>v===i+1);
+      if(asc&&best.groups.length===n&&best.groups.every(x=>x.length===4)){
+        best.groups.forEach((g2,i)=>key[i+1]=g2); // 题号1..n 与答案组一一对应，每题4个选项
+      }else{
+        const flat=[];best.groups.forEach(g2=>{for(const ch of g2)flat.push(ch)});
+        let gg=ansGroup(e);
+        if(gg!==4){if(n&&flat.length===n*4)gg=4;else if(n&&flat.length===n)gg=1}
+        if(gg===4){for(let i=0;i+4<=flat.length;i+=4)key[i/4+1]=flat.slice(i,i+4).join('')}
+        else if(flat.length>=5)flat.forEach((v,i)=>key[i+1]=v);
+      }
+    }
+  }
+  return key;
+}
+function autoKpLink(e){ // 按④解析与①试卷题干文字自动关联知识点（匹配教材资料库考点名）
+  if(!e)e=db.exams.find(x=>x.id===ctx.exam);
+  if(!e)return 0;
+  let m={},stm={};
+  try{m=analysisMap(e).m;stm=stemMap(e)}catch(err){m={};stm={}}
+  let n=0;
+  e.questions.forEach(q=>{
+    if(q.kpId)return;
+    const txt=(m[q.no]||'')+' '+(stm[q.no]||'');
+    if(!txt)return;
+    let best=null,bs=0;
+    KPS.forEach(k=>{
+      let s=txt.indexOf(k.text)>=0?10:0;
+      if(s&&k.chapter&&txt.indexOf(k.chapter)>=0)s+=4;
+      if(!s&&k.chapter&&txt.indexOf(k.chapter)>=0)s+=4;
+      if(!s&&txt.indexOf(k.book.short)>=0)s+=1;
+      if(s>bs){bs=s;best=k}
+    });
+    if(best){q.kpId=best.id;n++}
+  });
+  return n;
+}
+function autoKpLinkBtn(){const e=db.exams.find(x=>x.id===ctx.exam);
+  const n=autoKpLink(e);save();renderExamPage();
+  toast(n?('已按④解析自动关联 '+n+' 题知识点'):'未能在④解析中匹配到资料库考点（解析需含「第N题：」开头并提到考点/章节名称；也可在下拉框手动关联）')}
+function oneClickJudge(){
+  const e=db.exams.find(x=>x.id===ctx.exam);
+  const g=ansGroup(e);
+  const key=parseAnswerKey(e,g);let hit=0;
+  if(!Object.keys(key).length){ // ③无答案时，从④解析的「N.答案：TFTF」直接提取兜底
+    ((e.files.analysis)||[]).filter(f=>f.text).forEach(f=>{
+      const sm=segNums(f.text);
+      Object.keys(sm).forEach(k=>{const mm=(sm[k]||'').match(/答案\s*[：:]\s*([TF√X×]{1,8})/i);
+        if(mm&&!key[+k])key[+k]=mm[1].toUpperCase()});
+    });
+  }
+  const maxNo=Math.max(0,...e.questions.map(q=>q.no),...Object.keys(key).map(Number));
+  let added=0;const ds=2;
+  for(let i=1;i<=maxNo;i++){if(!e.questions.some(q=>q.no===i)){e.questions.push({no:i,score:ds,kpId:''});added++}}
+  if(added)e.questions.sort((a,b)=>a.no-b.no);
+  if(!e.questions.length)return toast('未识别到标准答案：请重新上传③答案（新版自动提取文字，支持表格式答题卡），或用「答案文字录入」按「第1题：B」格式录入');
+  e.questions.forEach(q=>{if(key[q.no]){q.ans=key[q.no];hit++}});
+  const kpN=autoKpLink(e);
+  const cls=students().filter(u=>u.schoolId===e.schoolId&&u.gradeId===e.gradeId&&u.classId===e.classId);
+  let ok=0;const fail=[];
+  (e.files.sheetStu||[]).filter(f=>f.text).forEach(f=>{
+    const p=parseSheetStudent(f,g);
+    const stu=p&&cls.find(u=>(p.no&&u.studentNo===p.no)||u.name===p.name);
+    if(!stu||!p.answers){fail.push((p&&p.name)||f.name.replace(/\.[^.]+$/,''));return}
+    if(!e.scores[stu.id])e.scores[stu.id]={q:{},total:0};
+    const rec=e.scores[stu.id].q;let tot=0;
+    e.questions.forEach(q=>{
+      if(q.ans){const rawA=((p.answers[q.no-1])||'').toUpperCase().replace(/[^A-Z0-9√×]/g,'');
+        const rawK=q.ans.toUpperCase().replace(/[^A-Z0-9√×]/g,'');
+        let sc=0;
+        if(g===4&&rawK.length>1){ // 多人多选答题卡：按答对选项数计分（4对=满分，3对=1分，2对=0.2分，0-1对=0分）
+          let c=0;for(let i=0;i<rawK.length;i++)if(rawA[i]===rawK[i])c++;
+          sc=c>=rawK.length?q.score:(c===rawK.length-1?1:(c===rawK.length-2?0.2:0));
+        }else{
+          const a=rawA.split('').sort().join('');const k=rawK.split('').sort().join('');
+          sc=(a&&a===k)?q.score:0;
+        }
+        rec[q.no]=sc;
+      }
+      tot+=rec[q.no]||0});
+    e.scores[stu.id].total=Math.round(tot*100)/100;ok++;});
+  const nText=(e.files.sheetStu||[]).filter(f=>f.text).length;
+  if(!ok&&!nText){
+    Object.keys(e.scores).forEach(sid=>{const s=e.scores[sid];s.total=e.questions.reduce((a,q)=>a+(s.q[q.no]||0),0)});
+    ok=Object.keys(e.scores).length;
+  }
+  save();
+  const failInfo=fail.length?('，未识别 '+fail.length+' 份（'+fail.slice(0,2).join('、')+(fail.length>2?' 等':'')+'：班级名单中无此姓名/学号）'):'';
+  const ansAll=(e.files.answer||[]).length,ansTxt=(e.files.answer||[]).filter(f=>f.text).length;
+  const anaAll=(e.files.analysis||[]).length,anaTxt=(e.files.analysis||[]).filter(f=>f.text).length;
+  const anaQs=(function(){try{return Object.keys(analysisMap(e).m).length}catch(err){return 0}})();
+  const sheetAll=(e.files.sheetStu||[]).length;
+  const oversize=(maxNo>0&&e.questions.length>maxNo)?('；注意：框架现有 '+e.questions.length+' 题多于答案的 '+maxNo+' 题，建议在「题目与知识点」把题目数量改为 '+maxNo+' 后点「生成题目行」'):'';
+  const diag='；自检：③答案 '+ansTxt+'/'+ansAll+' 份有文字(识别'+hit+'题)，④解析 '+anaTxt+'/'+anaAll+' 份有文字(切出'+anaQs+'题·关联'+kpN+'题)，⑤答题卡 '+nText+'/'+sheetAll+' 份有文字';
+  const msg='✓ 已匹配 '+hit+'/'+e.questions.length+' 题答案'+(g===4?'（多人多选答题卡：每题4个选项按答对选项数计分——4对满分、3对1分、2对0.2分、0-1对0分）':'')+(added?('；已自动补建 '+added+' 道题（每题'+ds+'分，可在「题目与知识点」修改）'):'')+oversize+(kpN?('；已按④解析自动关联知识点 '+kpN+' 题'):'')+(nText?(ok?('；判卷成功 '+ok+' 人'+failInfo+'；分数已写入「批量录分」'):('；⑤答题卡解析出的学生与班级名单对不上'+(fail.length?('：'+fail.slice(0,3).join('、')+' 等'):'')+'。请在「名单管理」导入/核对真实学生名单（姓名或学号一致即自动匹配），或到「批量录分」手动录分')):('；⑤答题卡未提取到文字，已按已录成绩核对汇总 '+Object.keys(e.scores).length+' 人'))+diag;
+  const st=document.getElementById('ma-status');if(st)st.innerHTML=msg;
+  toast(msg+(hit<e.questions.length?'（有题未识别到答案，主观题请到「批量录分」手动补录）':''));
+  renderExamPage();
+}
+function saveAISettings(){
+  const key=(document.getElementById('ai-key').value||'').trim();
+  const model=(document.getElementById('ai-model').value||'').trim();
+  const endpoint=(document.getElementById('ai-endpoint').value||'').trim();
+  if(!key)return toast('请填写 API Key');
+  if(!model)return toast('请填写模型或接入点ID');
+  db.ai={key,model,endpoint:endpoint||'https://ark.cn-beijing.volces.com/api/v3/chat/completions'};
+  save();toast('AI 设置已保存（仅存本机浏览器）');renderExamPage();
+}
+function buildPrompt(e){
+  return '这是一张学生答题卡照片。请仔细识别图中的学号、姓名以及每道题的作答答案。本次考试共'+e.questions.length+'题，满分分别为：'+e.questions.map(q=>'第'+q.no+'题'+q.score+'分').join('，')+'。请只输出一个JSON对象（不要任何其他文字、不要代码块标记）：{"studentNo":"图中识别的学号","name":"图中识别的姓名","answers":{"1":"该题作答","2":"该题作答"}}，answers 的键是题号（字符串），值是该题学生作答内容（选择题用字母，多选如AC，未作答填空字符串""）。';
+}
+function parseAIJSON(txt){
+  let t=(txt||'').replace(/```json|```/g,'').trim();
+  const m=t.match(/\{[\s\S]*\}/);
+  if(!m)throw new Error('AI 返回中未找到 JSON');
+  return JSON.parse(m[0]);
+}
+async function callArk(imgUrl,prompt){
+  const ai=db.ai;
+  const res=await fetch(ai.endpoint||'https://ark.cn-beijing.volces.com/api/v3/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+ai.key},
+    body:JSON.stringify({model:ai.model,messages:[{role:'user',content:[
+      {type:'image_url',image_url:{url:imgUrl}},
+      {type:'text',text:prompt}]}],temperature:0})});
+  if(!res.ok){const t=await res.text().catch(()=>'');throw new Error('接口返回 '+res.status+(t?'：'+t.slice(0,140):''))}
+  const j=await res.json();
+  const txt=j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;
+  if(!txt)throw new Error('AI 未返回内容');
+  return txt;
+}
+async function aiJudge(){
+  const e=db.exams.find(x=>x.id===ctx.exam);
+  if(!db.ai||!db.ai.key||!db.ai.model)return toast('请先在「⚙️ AI 接口设置」中填入 API Key 和模型并保存');
+  const imgs=(e.files.sheetStu||[]).filter(f=>f.preview);
+  if(!imgs.length)return toast('请先在「⑤ 学生答题卡」上传答题卡照片（图片会自动压缩存储）');
+  const key=parseAnswerKey(e);
+  e.questions.forEach(q=>{if(key[q.no])q.ans=key[q.no]});
+  if(!e.questions.some(q=>q.ans))return toast('未匹配到标准答案：请先在「答案文字录入」按「第1题：B」格式录入答案');
+  save();
+  const cls=students().filter(u=>u.schoolId===e.schoolId&&u.gradeId===e.gradeId&&u.classId===e.classId);
+  const st=document.getElementById('ai-status');
+  let ok=0;const fail=[];
+  for(const f of imgs){
+    if(st)st.innerHTML='AI 识别中 '+((imgs.indexOf(f))+1)+'/'+imgs.length+'：'+esc(f.name)+'…';
+    try{
+      const txt=await callArk(f.preview,buildPrompt(e));
+      const parsed=parseAIJSON(txt);
+      const stu=cls.find(u=>(parsed.studentNo&&u.studentNo===String(parsed.studentNo).trim())||(parsed.name&&u.name===String(parsed.name).trim()));
+      if(!stu){fail.push(f.name+'（识别到 '+(parsed.studentNo||parsed.name||'未知')+'，未匹配到本班学生）');continue}
+      if(!e.scores[stu.id])e.scores[stu.id]={q:{},total:0};
+      const rec=e.scores[stu.id].q;let tot=0;
+      e.questions.forEach(q=>{
+        if(q.ans){const a=String((parsed.answers&&parsed.answers[q.no])||'').toUpperCase().replace(/[^A-Z0-9√×]/g,'').split('').sort().join('');
+          const k=q.ans.toUpperCase().replace(/[^A-Z0-9√×]/g,'').split('').sort().join('');
+          rec[q.no]=(a&&a===k)?q.score:0}
+        tot+=rec[q.no]||0});
+      e.scores[stu.id].total=tot;ok++;
+    }catch(err){fail.push(f.name+'（'+err.message+'）')}
+  }
+  save();
+  if(st)st.innerHTML='✓ AI 判卷完成：成功 '+ok+'/'+imgs.length+' 张'+(fail.length?'；失败：'+fail.slice(0,2).join('；')+(fail.length>2?' 等':''):'');
+  toast('AI 一键判卷完成：成功 '+ok+' 张'+(fail.length?'，失败 '+fail.length+' 张（详见状态栏）':'')+'；建议在「批量录分」明细中抽查复核');
+  renderExamPage();
+}
+function upFile(k,input){
+  const e=db.exams.find(x=>x.id===ctx.exam);
+  [...input.files].forEach(f=>{
+    const ext=(f.name.toLowerCase().split('.').pop()||'');
+    const done=()=>{save();renderExamPage()};
+    if(f.type.startsWith('image/')){
+      if(f.size<=300*1024){const r=new FileReader();r.onload=()=>{const entry={name:f.name,type:f.type,size:f.size,preview:r.result};e.files[k].push(entry);done();
+        if(k==='sheetStu')ocrImageSrc(r.result,t=>{if(t&&t.replace(/\s/g,'').length>10){entry.text=t;entry.ocr=true;done()}})};r.onerror=()=>done();r.readAsDataURL(f)}
+      else if(f.size<=8*1024*1024){compressImage(f,1200,0.72,d=>{const entry={name:f.name,type:f.type,size:f.size,preview:d,compressed:true};e.files[k].push(entry);done();
+        if(k==='sheetStu')ocrImageSrc(d,t=>{if(t&&t.replace(/\s/g,'').length>10){entry.text=t;entry.ocr=true;done()}})})}
+      else{e.files[k].push({name:f.name,type:f.type||'file',size:f.size});toast(f.name+' 超过8MB，仅存档名');done()}}
+    else if(ext==='pdf'){
+      const entry={name:f.name,type:'pdf',size:f.size,extracting:true};e.files[k].push(entry);done();
+      loadPdfText(f,(text,items)=>{
+        if(text&&text.replace(/\s/g,'').length>20){entry.text=text;if(k==='sheetStu'&&items&&items.length)entry.items=items;delete entry.extracting;done();return}
+        entry.ocr=true;done(); // 文字版提取失败 → 扫描版走OCR
+        ocrPdfFile(f,t=>{
+          delete entry.extracting;
+          if(t&&t.replace(/\s/g,'').length>10){entry.text=t;entry.ocr=true}
+          else{entry.scanOnly=true}
+          done()});});}
+    else if(ext==='docx'){
+      const entry={name:f.name,type:'docx',size:f.size,extracting:true};e.files[k].push(entry);done();
+      loadScript(CDN.mammoth,ok=>{
+        if(!ok){delete entry.extracting;entry.scanOnly=true;done();return}
+        readFileAs(f,'array',buf=>{
+          try{mammoth.extractRawText({arrayBuffer:buf}).then(r=>{
+            const t=(r.value||'').trim();
+            if(t.replace(/\s/g,'').length>10){entry.text=t;delete entry.extracting}
+            else{delete entry.extracting;entry.scanOnly=true}
+            done()}).catch(()=>{delete entry.extracting;entry.scanOnly=true;done()})}
+          catch(err){delete entry.extracting;entry.scanOnly=true;done()}
+        });});}
+    else{e.files[k].push({name:f.name,type:f.type||'file',size:f.size});done()}});
+}
+function compressImage(f,maxW,q,cb){
+  const img=new Image();const r=new FileReader();
+  r.onload=()=>{img.onload=()=>{try{const c=document.createElement('canvas');
+    const scale=Math.min(1,maxW/(img.width||maxW));c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    cb(c.toDataURL('image/jpeg',q))}catch(err){cb(null)}};img.onerror=()=>cb(null);img.src=r.result};
+  r.onerror=()=>cb(null);
+  r.readAsDataURL(f);
+}
+function rmFile(k,i){const e=db.exams.find(x=>x.id===ctx.exam);e.files[k].splice(i,1);save();renderExamPage()}
+function exQs(e){
+  const kpOptions=sel=>'<option value="">— 请选择 —</option>'+KB.map(b=>'<optgroup label="'+esc(b.short)+'｜'+esc(b.title)+'">'+
+    b.chapters.map(c=>c.kps.map(k=>{const kk=KPS.find(x=>x.text===k&&x.book.id===b.id);
+      return '<option value="'+kk.id+'"'+(sel&&sel.kpId===kk.id?' selected':'')+'>'+esc(c.name)+' · '+esc(k)+'</option>'}).join('')).join('')+'</optgroup>').join('');
+  document.getElementById('exbody').innerHTML=
+  '<div class="row" style="align-items:flex-end"><div style="flex:0 0 90px"><label>题目数量</label><input id="q-n" type="number" value="'+Math.max(1,e.questions.length||6)+'" min="1" max="300"></div>'+
+  '<div style="flex:0 0 120px"><label>新题默认分值</label><input id="q-score" type="number" value="2" min="1"></div>'+
+  '<div style="flex:0 0 320px"><label>新题统一知识点（可暂不关联）</label><select id="q-kp">'+kpOptions(null)+'</select></div>'+
+  '<button class="btn" onclick="setQn()">生成题目行</button><span class="small muted">80道选择题直接填 80 一键生成；知识点可后补关联</span></div>'+
+  '<div style="overflow-x:auto;margin-top:12px"><table><thead><tr><th>题号</th><th style="width:120px">满分</th><th style="width:420px">关联知识点（教材资料库）</th><th style="width:90px">标准答案</th></tr></thead><tbody>'+
+  e.questions.map((q,i)=>'<tr><td>第'+q.no+'题</td><td><input type="number" value="'+q.score+'" min="1" onchange="setQ('+i+',this.value)"></td><td><select onchange="setQKp('+i+',this.value)">'+kpOptions(q)+'</select><div class="small muted" style="margin-top:3px">'+kpLabel(q.kpId)+'</div></td><td>'+(q.ans?'<b>'+esc(q.ans)+'</b>':'<span class="muted">—</span>')+'</td></tr>').join('')+
+  '</tbody></table></div><div style="margin-top:12px"><span class="small muted">当前满分合计：<b>'+(e.questions.reduce((a,q)=>a+q.score,0)||0)+'</b> 分</span>　<button class="btn" onclick="saveQs()">保存题目设置</button>　<button class="btn ghost" onclick="autoKpLinkBtn()">🔗 按④解析自动关联知识点</button></div>';
+}
+function setQn(){const e=db.exams.find(x=>x.id===ctx.exam);const n=Math.max(1,Math.min(300,+document.getElementById('q-n').value||1));
+  const sc=Math.max(1,+document.getElementById('q-score').value||2);const kp=document.getElementById('q-kp').value||'';
+  while(e.questions.length<n)e.questions.push({no:e.questions.length+1,score:sc,kpId:kp});
+  e.questions=e.questions.slice(0,n).map((q,i)=>({...q,no:i+1}));save();renderExamPage()}
+function setQ(i,v){const e=db.exams.find(x=>x.id===ctx.exam);e.questions[i].score=Math.max(1,+v||1);save()}
+function setQKp(i,v){const e=db.exams.find(x=>x.id===ctx.exam);e.questions[i].kpId=v;save();renderExamPage()}
+function saveQs(){const e=db.exams.find(x=>x.id===ctx.exam);
+  if(!e.questions.length)return toast('请先生成题目行');
+  const noKp=e.questions.filter(q=>!q.kpId).length;
+  save();toast('题目设置已保存'+(noKp?('，其中 '+noKp+' 题未关联知识点（报告将按教材资料库给通用建议，可后续在表格中补充关联）'):'，可一键判卷或进入「批量录分」'))}
+function exEnter(e){
+  const cls=students().filter(u=>u.schoolId===e.schoolId&&u.gradeId===e.gradeId&&u.classId===e.classId);
+  const total=e.questions.reduce((a,q)=>a+q.score,0);
+  document.getElementById('exbody').innerHTML=
+  '<div class="card" style="border:0;padding:0"><h3>✍️ 批量录分（支持从 Excel 直接复制粘贴）</h3>'+
+  '<p class="small muted">每行一位学生：<b>学号 姓名 [各题得分…]</b>。若给出全部题目得分（共 '+e.questions.length+' 列），系统逐题判分并自动评分、排位；若只给一个总分，则仅记录总分（无逐题分析）。</p>'+
+  '<textarea id="paste" rows="6" placeholder="2501 陈嘉禾 10 8 12 11 9 13 10 12&#10;2502 林思远 12 10 11 9 13 8 11 13"></textarea>'+
+  '<div class="row" style="margin-top:10px"><button class="btn" onclick="pasteScores()">解析并录入</button><span class="small muted">重复粘贴同一学号将覆盖其旧成绩</span></div></div>'+
+  '<h3 style="margin:16px 0 10px">🔍 核对查验</h3><div id="chk"></div>'+
+  '<h3 style="margin:16px 0 10px">🧾 已录成绩明细（可点击单元格单题修改）</h3><div style="overflow-x:auto"><table><thead><tr><th>学号</th><th>姓名</th>'+e.questions.map(q=>'<th class="num">题'+q.no+'('+q.score+')</th>').join('')+'<th class="num">总分</th></tr></thead><tbody>'+
+  cls.map(u=>{const s=e.scores[u.id];return '<tr><td>'+esc(u.studentNo||'—')+'</td><td>'+esc(u.name)+'</td>'+
+   e.questions.map(q=>{const v=s?s.q[q.no]:null;return '<td class="num" style="cursor:pointer" '+(s?'onclick="cellEdit(\''+u.id+'\','+q.no+','+q.score+','+v+')"':'')+'>'+(v==null?'<span class="muted">—</span>':(v<q.score?'<span style="color:var(--bad)">'+v+'</span>':v))+'</td>'}).join('')+
+   '<td class="num"><b>'+(s?s.total:'—')+'</b></td></tr>'}).join('')+
+  '</tbody></table></div><p class="small muted" style="margin-top:8px">题目总分合计 '+total+' 分；红色为失分题。';
+  check();
+}
+function cellEdit(sid,no,score,cur){const v=prompt('第'+no+'题得分（满分 '+score+'）：',cur);if(v==null)return;
+  const e=db.exams.find(x=>x.id===ctx.exam);const num=Math.max(0,Math.min(score,parseFloat(v)||0));
+  const rec=e.scores[sid];rec.q[no]=num;rec.total=e.questions.reduce((a,q)=>a+(rec.q[q.no]||0),0);
+  save();toast('已更新');renderExamPage()}
+function pasteScores(){
+  const e=db.exams.find(x=>x.id===ctx.exam);
+  const cls=students().filter(u=>u.schoolId===e.schoolId&&u.gradeId===e.gradeId&&u.classId===e.classId);
+  const lines=(document.getElementById('paste').value||'').split(/\n+/).map(l=>l.trim()).filter(Boolean);
+  let ok=0,fail=[];
+  lines.forEach(line=>{const parts=line.split(/[\s,，\t]+/);
+    const stu=cls.find(u=>u.studentNo===parts[0]||u.name===parts[1]);
+    if(!stu){fail.push(parts.slice(0,2).join(' '));return}
+    const nums=parts.slice(2).map(Number).filter(v=>!isNaN(v));
+    if(nums.length===e.questions.length){const rec={};e.questions.forEach((q,i)=>{rec[q.no]=Math.max(0,Math.min(q.score,nums[i]))});
+      e.scores[stu.id]={q:rec,total:e.questions.reduce((a,q)=>a+rec[q.no],0)};ok++}
+    else if(nums.length===1){e.scores[stu.id]={q:{},total:Math.max(0,Math.min(e.questions.reduce((a,q)=>a+q.score,0),nums[0]))};ok++}
+    else fail.push(parts.slice(0,2).join(' ')+'（列数不符）')});
+  save();toast('成功录入 '+ok+' 条'+(fail.length?'，失败 '+fail.length+' 条：'+fail.slice(0,3).join('；'):''));
+  renderExamPage();
+}
+function check(){
+  const e=db.exams.find(x=>x.id===ctx.exam);
+  const cls=students().filter(u=>u.schoolId===e.schoolId&&u.gradeId===e.gradeId&&u.classId===e.classId);
+  const rec=cls.filter(u=>e.scores[u.id]);
+  const miss=cls.filter(u=>!e.scores[u.id]).map(u=>u.name);
+  const over=cls.filter(u=>{const s=e.scores[u.id];return s&&e.questions.some(q=>s.q[q.no]!=null&&s.q[q.no]>q.score)});
+  const noKp=e.questions.filter(q=>!q.kpId);
+  const noAns=e.files.answer.length===0;
+  document.getElementById('chk').innerHTML=
+  '<div class="grid4">'+
+  '<div class="stat"><b class="kpi-green">'+rec.length+'</b><span>已录人数</span></div>'+
+  '<div class="stat"><b class="kpi-orange">'+miss.length+'</b><span>未录：'+(miss.length?esc(miss.slice(0,4).join('、'))+(miss.length>4?'…':''):'无')+'</span></div>'+
+  '<div class="stat"><b class="'+(noKp.length?'kpi-red':'kpi-blue')+'">'+noKp.length+'</b><span>未关联知识点的题目</span></div>'+
+  '<div class="stat"><b class="'+(noAns?'kpi-orange':'kpi-blue')+'">'+(noAns?'缺':'已传')+'</b><span>标准答案文件</span></div></div>'+
+  (over.length?'<p class="small" style="color:var(--bad);margin-top:10px">⚠ 发现越界分数：'+over.map(u=>u.name).join('、')+'</p>':'')+
+  '<p class="small muted" style="margin-top:10px">'+(rec.length===cls.length&&cls.length&&!noKp?'✓ 核对通过：全员成绩完整、题目知识点齐全，可进入「判卷分析」。':'请补齐后再进行分析，未录学生不计入统计。')+'</p>';
+}
+function exAna(e){
+  const a=computeExam(e);
+  ctx.anaPdfName=e.title+'·'+clsLabel({schoolId:e.schoolId,gradeId:e.gradeId,classId:e.classId})+' 判卷分析';
+  if(!a.stats.n){document.getElementById('exbody').innerHTML='<div class="empty">尚未录入成绩，请先「批量录分」</div>';return}
+  const topErr=a.qAcc.slice().sort((x,y)=>y.errRate-x.errRate).slice(0,5);
+  const clsExs=examsOfClass(e.schoolId,e.gradeId,e.classId);
+  document.getElementById('exbody').innerHTML=
+  '<div class="row" style="justify-content:flex-end"><button class="btn sm" style="background:#7c3aed" onclick="downloadDomPdf(ctx.anaPdfName,document.getElementById(\'exbody\'))">📄 下载PDF报告</button></div>'+
+  '<div class="grid4">'+
+   '<div class="stat"><b class="kpi-blue">'+Math.round(a.stats.avg*10)/10+'</b><span>平均分 / 满分 '+a.tot+'</span></div>'+
+   '<div class="stat"><b class="kpi-green">'+a.stats.max+'</b><span>最高分</span></div>'+
+   '<div class="stat"><b class="kpi-orange">'+pct(a.stats.avg/a.tot*100)+'</b><span>班级平均得分率</span></div>'+
+   '<div class="stat"><b class="kpi-red">'+a.stats.low+'</b><span>得分率&lt;60% 人数</span></div></div>'+
+  '<div class="grid2" style="margin-top:16px">'+
+   '<div class="card"><h3>各题错误率（红色越高越需讲评）</h3><p class="small muted" style="margin:2px 0 6px">横轴为题号，图表过宽时可左右滑动查看全部题目</p><canvas id="cv-q"></canvas></div>'+
+   '<div class="card"><h3>成绩分布（得分率分段 · 人数）</h3><canvas id="cv-d"></canvas></div></div>'+
+  '<div class="card"><h3>知识点掌握率（全班，按资料库归并）</h3><canvas id="cv-k"></canvas>'+
+   '<div style="margin-top:10px">'+a.kpAcc.map(o=>'<div class="row" style="align-items:center;margin:6px 0"><div style="flex:2" class="small">'+(o.kp?esc(kpLabel(o.kp.id)):'<span class="tag gray">未关联</span>')+'</div><div class="bar" style="flex:3"><i style="width:'+Math.round(o.acc*100)+'%;background:'+(o.acc<0.6?'var(--bad)':o.acc<0.75?'var(--warn)':'var(--ok)')+'"></i></div><div style="flex:0 0 60px" class="num small">'+pct(o.acc*100)+'</div></div>').join('')+'</div></div>'+
+  '<div class="card"><h3>🔥 错题 TOP5（建议课堂重点讲评）</h3>'+
+   htmlTable([['题号'],['知识点'],['错误率',1],['班级平均得分',1],['讲评建议']],
+   topErr.map(x=>{const kp=x.q.kpId&&KP(x.q.kpId);
+    return ['第'+x.q.no+'题','<span class="pill">'+(kp?esc(kp.text):'未关联')+'</span>',pct(x.errRate*100),Math.round(x.avg*10)/10+'/'+x.q.score,
+    kp?('结合《'+kp.book.short+'》「'+kp.chapter+'」讲解，并布置同类专项训练'):'请先在「题目与知识点」为该题关联知识点，再做讲评']}))+'</div>'+
+  '<div class="card"><h3>📚 本班多试卷纵向对比</h3>'+
+   htmlTable([['考试'],['日期'],['人数',1],['平均分',1],['得分率',1]],
+   clsExs.map(x=>{const ax=computeExam(x);return [esc(x.title)+(x.id===e.id?'　<span class="tag blue">当前</span>':''),x.date,ax.stats.n,Math.round(ax.stats.avg*10)/10,pct(ax.stats.avg/ax.tot*100)]}))+'</div>'+
+  '<div class="card"><h3>👤 学生个人成绩与报告（点击查看判卷报告）</h3>'+
+   htmlTable([['排名'],['姓名'],['学号'],['总分',1],['得分率',1],['等级'],[null]],
+   a.rows.filter(r=>r.s!=null).sort((x,y)=>x.rank-y.rank).map(r=>{const rep=studentReport(e,r);
+    return [r.rank,esc(r.u.name),esc(r.u.studentNo||'—'),r.s,pct(rep.per)+'%',
+     '<span class="tag '+(rep.level==='优秀'?'green':rep.level==='良好'?'blue':rep.level==='合格'?'orange':'red')+'">'+rep.level+'</span>',
+     '<button class="btn sm" onclick="showReport(\''+e.id+'\',\''+r.u.id+'\')">报告</button>']}))+'</div>';
+  setTimeout(()=>{
+    barChart(document.getElementById('cv-q'),a.qAcc.map(x=>String(x.q.no)),a.qAcc.map(x=>Math.round(x.errRate*1000)/10),{max:100,height:210,color:'#dc2626',fmt:v=>v+'%',barW:30});
+    drawDist(document.getElementById('cv-d'),a.dist);
+    barChart(document.getElementById('cv-k'),a.kpAcc.map(o=>o.kp?o.kp.text:'未关联'),a.kpAcc.map(o=>Math.round(o.acc*1000)/10),{max:100,height:230,color:'#1a9e6c',fmt:v=>v+'%',barW:64,rotate:true});
+  },0);
+}
+function segNums(t){ // 把一段文字按题目编号切分为 {题号:内容}（支持「第N题」、行首「N.」、内联「N.」三种排版）
+  const m={};if(!t)return m;
+  const re=/第\s*(\d+)\s*题/g;const idx=[];let mm;
+  while((mm=re.exec(t)))idx.push({no:+mm[1],start:mm.index});
+  if(idx.length){idx.forEach((p,i)=>{const end=i+1<idx.length?idx[i+1].start:t.length;
+    m[p.no]=(m[p.no]||'')+t.slice(p.start,end).trim()+'\n'});return m}
+  const lines=t.split(/\r?\n/);let cur=null;const buf=[];
+  lines.forEach(l=>{const mm2=l.match(/^\s*(\d{1,3})\s*[\.、：:]/);
+    if(mm2){if(cur!=null)m[cur]=(m[cur]||'')+buf.join(' ')+'\n';cur=+mm2[1];buf.push(l.replace(/^\s*\d{1,3}\s*[\.、：:]/,''))}
+    else if(cur!=null)buf.push(l)});
+  if(cur!=null)m[cur]=(m[cur]||'')+buf.join(' ')+'\n';
+  if(!Object.keys(m).length){ // 再回退：整段文字里的内联编号（1.xxx 2.xxx…，需构成连续递增序列）
+    const re2=/(^|[^\dA-Za-z])(\d{1,3})\s*[\.、：:](?!\d)/g;const pts=[];let mm3;
+    while((mm3=re2.exec(t))){const no2=+mm3[2];if(no2>=1&&no2<=300)pts.push({no:no2,start:mm3.index+mm3[1].length})}
+    if(pts.length>1){let expect=pts[0].no;const cuts=[];
+      pts.forEach(p=>{if(p.no===expect){cuts.push(p);expect++}});
+      if(cuts.length>1)cuts.forEach((p,i)=>{const end=i+1<cuts.length?cuts[i+1].start:t.length;
+        m[p.no]=(m[p.no]||'')+t.slice(p.start,end).trim()+'\n'})}
+  }
+  return m;
+}
+function anaSegs(t){ // 解析专用切分：以「N.答案/解析」标记为准、按位置归属——即使分栏PDF的文字流乱序也各归各题
+  const m={};if(!t)return null;
+  const re=/(?:^|[^\dA-Za-z])(\d{1,3})\s*[\.．、]\s*(?=答案|解析)/g;const pts=[];let mm;
+  while((mm=re.exec(t))){const no=+mm[1];if(no>=1&&no<=300)pts.push({no,start:mm.index+mm[0].length-mm[1].length})}
+  if(pts.length<10)return null;
+  pts.sort((a,b)=>a.start-b.start);
+  pts.forEach((p,i)=>{const end=i+1<pts.length?pts[i+1].start:t.length;
+    m[p.no]=(m[p.no]||'')+t.slice(p.start,end).trim()+'\n'});
+  return m;
+}
+function analysisMap(e){
+  const m={};const notes=[];
+  ((e.files&&e.files.analysis)||[]).forEach(f=>{
+    if(f.text){const sm=anaSegs(f.text)||segNums(f.text); // 优先按答案标记位置切分，失败再用通用编号切分
+      Object.keys(sm).forEach(k=>m[k]=(m[k]||'')+sm[k]);
+      if(!Object.keys(sm).length)notes.push(f.name)}
+    else notes.push(f.name);
+  });
+  return {m,notes};
+}
+function stemMap(e){ // 从①试卷文字提取题干（辅助知识点关联）
+  const m={};
+  ((e.files&&e.files.template)||[]).forEach(f=>{if(f.text){const sm=segNums(f.text);
+    Object.keys(sm).forEach(k=>{if(!m[k])m[k]=sm[k]})}});
+  return m;
+}
+function chartDonut(segs,size,centerTxt,centerSub){ // 环形图 → dataURL（segs=[{v,c}]）
+  const cv=document.createElement('canvas');cv.width=size*2;cv.height=size*2;cv.style.width=size+'px';cv.style.height=size+'px';
+  const g=cv.getContext('2d');g.setTransform(2,0,0,2,0,0);
+  const tot=segs.reduce((a,s)=>a+s.v,0);
+  const cx=size/2,cy=size/2,r=size/2-8;
+  if(tot>0){let ang=-Math.PI/2;
+    segs.forEach(s=>{if(s.v<=0)return;const a2=ang+s.v/tot*Math.PI*2;
+      g.beginPath();g.moveTo(cx,cy);g.arc(cx,cy,r,ang,a2);g.fillStyle=s.c;g.fill();ang=a2})}
+  else{g.beginPath();g.arc(cx,cy,r,0,Math.PI*2);g.fillStyle='#e8eef6';g.fill()}
+  g.beginPath();g.arc(cx,cy,r*0.58,0,Math.PI*2);g.fillStyle='#fff';g.fill();
+  g.textAlign='center';g.fillStyle='#1c2434';g.font='bold '+Math.round(size/8)+'px Microsoft YaHei,sans-serif';
+  g.fillText(String(centerTxt!=null?centerTxt:tot),cx,cy+2);
+  g.fillStyle='#5b6b83';g.font=Math.round(size/11)+'px Microsoft YaHei,sans-serif';
+  g.fillText(centerSub||'',cx,cy+Math.round(size/8)+8);
+  return cv.toDataURL('image/png');
+}
+function chartRadar(dims,w){ // 五维雷达图 → dataURL（dims=[{t,v}], v:0-100）
+  const h=Math.round(w*0.82);
+  const cv=document.createElement('canvas');cv.width=w*2;cv.height=h*2;cv.style.width=w+'px';cv.style.height=h+'px';
+  const g=cv.getContext('2d');g.setTransform(2,0,0,2,0,0);
+  const cx=w/2,cy=h/2+4,R=Math.min(w,h)/2-28,n=dims.length;
+  const pt=(i,rr)=>{const a=-Math.PI/2+i*2*Math.PI/n;return[cx+rr*Math.cos(a),cy+rr*Math.sin(a)]};
+  [0.25,0.5,0.75,1].forEach(k=>{g.beginPath();for(let i=0;i<n;i++){const p=pt(i,R*k);if(i===0)g.moveTo(p[0],p[1]);else g.lineTo(p[0],p[1])}g.strokeStyle='#dde5f0';g.stroke()});
+  for(let i=0;i<n;i++){const p=pt(i,R);g.beginPath();g.moveTo(cx,cy);g.lineTo(p[0],p[1]);g.strokeStyle='#dde5f0';g.stroke()}
+  g.fillStyle='#1c2434';g.font='12px Microsoft YaHei,sans-serif';g.textAlign='center';
+  dims.forEach((d,i)=>{const p=pt(i,R+16);g.fillText(d.t,p[0],p[1]+4)});
+  const dv=dims.map(d=>R*Math.max(0,Math.min(100,d.v))/100);
+  g.beginPath();dv.forEach((rr,i)=>{const p=pt(i,rr);if(i===0)g.moveTo(p[0],p[1]);else g.lineTo(p[0],p[1])});
+  g.fillStyle='rgba(31,111,235,.22)';g.fill();g.strokeStyle='#1f6feb';g.stroke();
+  return cv.toDataURL('image/png');
+}
+function showReport(exId,sid){
+  const e=db.exams.find(x=>x.id===exId);
+  if(!e)return toast('考试不存在');
+  const cx=computeExam(e);const row=cx.rows.find(r=>r.u.id===sid);
+  if(!row||row.s==null)return toast('该学生暂无成绩');
+  const rep=studentReport(e,row);
+  const am=analysisMap(e);
+  ctx.reportName=row.u.name+'·'+e.title;
+  // 答题情况：满分=对、0分=错、其余=半对
+  const pq=row.perQ||[];
+  const cRight=pq.filter(p=>p.got!=null&&p.got>=p.q.score).length;
+  const cZero=pq.filter(p=>p.got===0).length;
+  const cHalf=pq.filter(p=>p.got!=null&&p.got>0&&p.got<p.q.score).length;
+  // 难度分组（按班级错误率）：较易≤20%、中档20-50%、难题>50%
+  const dg={easy:{n:0,sc:0,got:0},mid:{n:0,sc:0,got:0},hard:{n:0,sc:0,got:0}};
+  cx.qAcc.forEach(a=>{const g=a.errRate<=0.2?'easy':(a.errRate<=0.5?'mid':'hard');dg[g].n++;dg[g].sc+=a.q.score;dg[g].got+=(e.scores[sid].q[a.q.no]||0)});
+  // 知识点掌握（按该生各知识点得分率）
+  const km={};
+  e.questions.forEach(q=>{const k=kpSafe(q.kpId);const key=k.id||'_';if(!km[key])km[key]={kp:k,got:0,all:0};km[key].got+=(e.scores[sid].q[q.no]||0);km[key].all+=q.score});
+  const kpList=Object.values(km).filter(x=>x.all>0).map(x=>({kp:x.kp,r:x.got/x.all}));
+  const kStr=kpList.filter(x=>x.r>=0.85).sort((a,b)=>b.r-a.r);
+  const kMid=kpList.filter(x=>x.r>=0.5&&x.r<0.85).sort((a,b)=>b.r-a.r);
+  const kWeak=kpList.filter(x=>x.r<0.5).sort((a,b)=>a.r-b.r);
+  const kNotExam=Math.max(0,KPS.length-kpList.length);
+  const donutImg=chartDonut([{v:kStr.length,c:'#22a06a'},{v:kMid.length,c:'#f0a92e'},{v:kWeak.length,c:'#e05252'}],170,kpList.length,'知识点总数');
+  // 五维能力雷达
+  const midRate=dg.mid.sc?dg.mid.got/dg.mid.sc*100:rep.per;
+  const rDims=[
+   {t:'概念理解力',v:kpList.length?Math.round(kpList.reduce((a,x)=>a+x.r,0)/kpList.length*100):0},
+   {t:'计算能力',v:Math.round(cRight/Math.max(1,pq.length)*100)},
+   {t:'模型应用',v:Math.round(midRate)},
+   {t:'审题能力',v:Math.round((pq.length-cZero)/Math.max(1,pq.length)*100)},
+   {t:'知识体系',v:Math.round(kStr.length/Math.max(1,kpList.length)*100)}];
+  const radarImg=chartRadar(rDims,250);
+  const radarAvg=Math.round(rDims.reduce((a,d)=>a+d.v,0)/rDims.length);
+  const nStar=Math.max(1,Math.min(5,Math.round(radarAvg/20)));
+  const stars='★★★★★'.slice(0,nStar)+'☆☆☆☆☆'.slice(0,5-nStar);
+  // 失分原因（启发式）：全班都对的题丢分=粗心/计算，全班都不会=概念混淆，半对=审题/碎片化
+  const clsRate=no=>{const a=cx.qAcc.find(z=>z.q.no===no);return a?1-a.errRate:0};
+  const rz={'概念混淆':0,'审题偏差':0,'知识碎片化':0,'计算粗心':0};
+  let lostAll=0;
+  (row.wrong||[]).forEach(q=>{const got=e.scores[sid].q[q.no]||0;const lost=q.score-got;if(lost<=0)return;lostAll+=lost;
+    const cr=clsRate(q.no);
+    if(got===0&&cr<0.5)rz['概念混淆']+=lost;
+    else if(got===0&&cr>=0.8)rz['计算粗心']+=lost;
+    else if(got>0&&cr>=0.8)rz['审题偏差']+=lost;
+    else rz['知识碎片化']+=lost});
+  // 错题分布：知识点→题号
+  const wd={};
+  (row.wrong||[]).forEach(q=>{const t=kpSafe(q.kpId).text;(wd[t]=wd[t]||[]).push('Q'+q.no)});
+  const diagTxt=rep.level==='优秀'?'基础扎实、发挥稳定，保持节奏向满分冲刺！':
+   (midRate>=75?'中档能力突出，但基础概念短板限制上限，优先补弱再拔高！':
+   '基础与中档均有提升空间，从薄弱知识点入手逐个击破，稳步提分！');
+  const wrongHtml=row.wrong.map(q=>{const got=e.scores[sid].q[q.no];const k=kpSafe(q.kpId);
+    const at=am.m[q.no];
+    const jx=at?'<p class="small" style="line-height:1.8"><b>教师解析：</b>'+esc(at)+'</p>'
+              :'<p class="small" style="line-height:1.8"><b>资料库解析：</b>'+suggestionFor(q.kpId,(q.score-got)/q.score)+'</p>'+libRefsHtml(q.kpId);
+    return '<div class="card" style="margin:10px 0"><b>第'+q.no+'题（得 '+got+' / '+q.score+' 分）</b>'+
+    '<p class="small" style="margin:6px 0">考点：<span class="pill">'+esc(k.text)+'</span><span class="pill">'+esc(k.book.short)+'·'+esc(k.chapter)+'</span></p>'+jx+'</div>'}).join('');
+  const colList=(title,color,items,foot,footColor)=>'<div class="col" style="background:#fff;border:1px solid #eef2f8;border-radius:10px;padding:10px"><b style="color:'+color+'">'+title+'</b>'+
+   (items.length?items.map(x=>'<div class="small" style="display:flex;justify-content:space-between;margin:5px 0"><span>'+esc(x.kp.text)+'</span><b style="color:'+color+'">'+pct(x.r*100)+'%</b></div>').join(''):'<p class="small muted">—</p>')+
+   (foot?'<p class="small" style="color:'+footColor+';margin-top:8px">'+foot+'</p>':'')+'</div>';
+  const dRow=(name,d,color)=>d.sc?'<div style="margin:8px 0"><div class="small" style="display:flex;justify-content:space-between"><span><b>'+name+'</b>（共 '+d.sc+' 分）</span><b>'+d.got+' / '+d.sc+' · '+pct(d.got/d.sc*100)+'%</b></div><div class="rbar" style="margin-top:4px"><i style="width:'+pct(d.got/d.sc*100)+'%;background:'+color+'"></i></div></div>':'';
+  const diffNote=(dg.easy.sc&&dg.easy.got/dg.easy.sc<0.8)?'中档题表现优秀，理解能力较强；基础题存在不稳的情况，需加强概念理解。':'整体节奏稳定，保持当前学习状态并持续查漏补缺。';
+  const rzRows=lostAll?Object.keys(rz).filter(k=>rz[k]>0).sort((a,b)=>rz[b]-rz[a]).map(k=>'<div style="margin:7px 0"><div class="small" style="display:flex;justify-content:space-between"><span>'+k+'</span><b>'+pct(rz[k]/lostAll*100)+'%</b></div><div class="rbar" style="margin-top:3px"><i style="width:'+pct(rz[k]/lostAll*100)+'%;background:'+(k==='概念混淆'?'#e05252':k==='审题偏差'?'#f0a92e':k==='知识碎片化'?'#7aa7e8':'#22a06a')+'"></i></div></div>').join(''):'<p class="small">本卷无失分点。</p>';
+  const topRz=lostAll?Object.keys(rz).sort((a,b)=>rz[b]-rz[a])[0]:null;
+  const wdRows=Object.keys(wd).map(t=>'<div class="small" style="display:flex;justify-content:space-between;margin:5px 0"><span>◎ '+esc(t)+'</span><span><span class="small muted">'+wd[t].length+' 题</span>　'+wd[t].map(q=>'<span class="kq">'+q+'</span>').join('')+'</span></div>').join('');
+  const docHtml=('<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>'+esc(row.u.name)+' · '+esc(e.title)+' 报告</title><style>'+
+   'body{font-family:"Microsoft YaHei",sans-serif;background:#f2f5fa;color:#1c2434;padding:26px;max-width:860px;margin:0 auto}'+
+   'h1{font-size:20px}h2{font-size:16px;margin:18px 0 10px}.card{background:#fff;border:1px solid #e3e8f0;border-radius:12px;padding:16px;margin:10px 0}'+
+   '.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px}.green{background:#e6f7f0;color:#1a9e6c}.red{background:#fdeaea;color:#dc2626}.orange{background:#fef3e2;color:#d97706}.blue{background:#e8f0fe;color:#1f6feb}'+
+   '.pill{display:inline-block;background:#eef2f8;border-radius:7px;padding:3px 9px;font-size:12px;margin:2px 4px 2px 0;color:#5b6b83}'+
+   '.cols{display:flex;gap:12px}.col{flex:1;min-width:0}.rbar{height:10px;border-radius:6px;background:#eef2f8;overflow:hidden}.rbar i{display:block;height:100%;border-radius:6px}'+
+   '.kq{display:inline-block;border:1px solid #dfe6f0;border-radius:6px;padding:1px 7px;font-size:11px;margin:2px;color:#5b6b83}'+
+   'table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px;border-bottom:1px solid #eef2f8;text-align:left}th{background:#f4f7fc}'+
+   'p{line-height:1.8}.small{font-size:12px;color:#5b6b83}</style></head><body>'+
+   '<h1>'+esc(row.u.name)+'（学号 '+esc(row.u.studentNo||'—')+'）· '+esc(e.title)+' 判卷分析报告</h1>'+
+   '<p class="small">'+esc(clsLabel({schoolId:e.schoolId,gradeId:e.gradeId,classId:e.classId}))+' · 考试日期 '+e.date+' · 满分 '+cx.tot+' 分 · 班级排名 '+rep.rank+'/'+rep.total+'</p>'+
+   '<div class="card"><h2>📊 总体评价</h2><p>总分 <b style="font-size:22px">'+row.s+'</b> 分　得分率 <b>'+rep.per+'%</b>　等级 <span class="tag '+(rep.level==='优秀'?'green':rep.level==='良好'?'blue':rep.level==='合格'?'orange':'red')+'">'+rep.level+'</span></p>'+
+   '<p>答题情况：<b style="color:#1a9e6c">✓ 对 '+cRight+' 题</b>　<b style="color:#d97706">◐ 半对 '+cHalf+' 题</b>　<b style="color:#dc2626">✗ 错 '+cZero+' 题</b>　｜　班级人数 '+rep.total+' · 班级平均 '+Math.round(cx.stats.avg*10)/10+' · 班级最高 '+cx.stats.max+'</p>'+
+   '<p>'+esc(rep.comment)+'</p></div>'+
+   '<div class="cols">'+
+    '<div class="card col"><h2>📶 各难度题型表现</h2>'+dRow('较易题（全班错误率≤20%）',dg.easy,'#22a06a')+dRow('中档题（20%-50%）',dg.mid,'#2f6fed')+dRow('难题（>50%）',dg.hard,'#e05252')+
+     '<p class="small" style="margin-top:8px">'+diffNote+'</p></div>'+
+    '<div class="card col"><h2>🍩 知识点掌握分布</h2><div class="cols">'+
+     '<div style="text-align:center"><img src="'+donutImg+'" style="width:150px"></div>'+
+     '<div style="flex:1;min-width:0"><p class="small" style="margin:2px 0"><b style="color:#22a06a">● 掌握较好</b>　'+kStr.length+' 个 · '+pct(kStr.length/Math.max(1,kpList.length)*100)+'%<br><span class="muted">理解扎实，运用自如</span></p>'+
+      '<p class="small" style="margin:2px 0"><b style="color:#f0a92e">● 中等掌握</b>　'+kMid.length+' 个 · '+pct(kMid.length/Math.max(1,kpList.length)*100)+'%<br><span class="muted">会做但不够稳定，易丢分</span></p>'+
+      '<p class="small" style="margin:2px 0"><b style="color:#e05252">● 掌握较差</b>　'+kWeak.length+' 个 · '+pct(kWeak.length/Math.max(1,kpList.length)*100)+'%<br><span class="muted">基础薄弱，需优先突破</span></p>'+
+      '<p class="small muted" style="margin:2px 0">● 未涉及/未考察　'+kNotExam+' 个（教材库共 '+KPS.length+' 个知识点）</p></div></div></div></div>'+
+   '<div class="card"><h2>📚 知识点掌握情况</h2><div class="cols">'+
+    colList('👍 优势知识点（≥85%）','#1a9e6c',kStr,'这些知识点掌握扎实，是你的优势！','#1a9e6c')+
+    colList('⚡ 中等掌握（50%-85%）','#d97706',kMid,'这些知识点会做但不够稳定，加强练习可有效提分！','#d97706')+
+    colList('🚩 薄弱知识点（<50%）','#dc2626',kWeak,'基础概念理解存在漏洞，需优先重点突破！','#dc2626')+'</div></div>'+
+   '<div class="cols">'+
+    '<div class="card col"><h2>🧠 失分原因分析</h2>'+rzRows+
+     (topRz?'<p class="small" style="margin-top:8px"><b>核心问题：</b>'+topRz+'占主导致失分'+(topRz==='概念混淆'||topRz==='知识碎片化'?'，导致审题错误与解题思路偏差':'')+'</p>':'')+'</div>'+
+    '<div class="card col"><h2>🕸 能力雷达图（五维能力）</h2><div style="text-align:center"><img src="'+radarImg+'" style="width:250px;max-width:100%"></div>'+
+     '<p class="small" style="text-align:center;margin-top:4px">能力水平：'+stars+'　<b>'+radarAvg+'</b>/100</p></div></div>'+
+   (wdRows?'<div class="card"><h2>🎯 错题分布（共 '+(row.wrong||[]).length+' 题）</h2>'+wdRows+'</div>':'')+
+   '<div class="card"><h2>🚀 提升行动卡</h2><div class="cols">'+
+    '<div class="col"><b>优先突破（提分最快）</b>'+(rep.weak.slice(0,3).length?rep.weak.slice(0,3).map((o,i)=>'<div class="small" style="margin:5px 0"><span class="tag red">'+(i+1)+'</span> '+esc(o.kp?o.kp.text:'未关联知识点')+' <span class="muted">失 '+o.lost+' 分</span></div>').join(''):'<p class="small muted">暂无薄弱点，保持！</p>')+'</div>'+
+    '<div class="col"><b>📖 学习策略建议</b><div class="small" style="margin:5px 0">1. 补概念：按薄弱知识点建立「概念→模型→题型」三层结构</div><div class="small" style="margin:5px 0">2. 错题重构：每道错题搞清错误原因，定期复盘避免再错</div><div class="small" style="margin:5px 0">3. 优势强化：保持优势知识点手感，强化中档题稳定拿分</div></div>'+
+    '<div class="col"><b>👨‍👩‍👧 家长行动建议</b><div class="small" style="margin:5px 0">1. 关注概念理解而非盲目刷题量</div><div class="small" style="margin:5px 0">2. 督促孩子错题整理与定期复盘</div><div class="small" style="margin:5px 0">3. 与任课老师保持沟通，定期跟进</div></div></div></div>'+
+   '<div class="card"><h2>🧾 各题得分明细</h2><table><tr><th>题号</th><th>满分</th><th>得分</th><th>考点</th></tr>'+
+    row.perQ.map(p=>'<tr><td>第'+p.q.no+'题</td><td>'+p.q.score+'</td><td style="color:'+(p.got<p.q.score?'#dc2626':'#1a9e6c')+'">'+(p.got==null?'—':p.got)+'</td><td class="small">'+esc(kpSafe(p.q.kpId).text)+'</td></tr>').join('')+'</table></div>'+
+   '<h2>❌ 错题解析与整改建议</h2>'+(am.notes.length?'<p class="small">📎 教师另上传了解析附件：'+am.notes.map(esc).join('、')+'（请向任课教师索取查看）</p>':'')+(wrongHtml||'<div class="card"><p>本卷全对，建议挑战更高难度专项卷。</p></div>')+
+   '<div style="margin-top:14px;background:#0f1c33;color:#fff;border-radius:12px;padding:14px 18px"><b>💡 一句话诊断：</b>'+esc(diagTxt)+'</div>'+
+   '<p class="small" style="margin-top:16px">报告由智学阅卷系统基于教师录分与教材知识点资料库自动生成 · 难度分层与失分归因由班级作答数据推算，整改建议引用对应教材章节，供教师与学生复习参考。</p>'+
+   '</body></html>');
+  ctx.reportHtml=docHtml;
+  let mv=document.getElementById('report-modal');if(mv)mv.remove();
+  mv=document.createElement('div');mv.id='report-modal';
+  mv.style.cssText='position:fixed;inset:0;background:rgba(15,28,51,.6);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:18px;overflow:auto';
+  mv.innerHTML='<div style="background:#fff;max-width:920px;width:97%;border-radius:14px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.3)">'+
+   '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:#0f1c33;color:#fff"><b>📄 判卷分析报告</b><span>'+
+   '<button class="btn sm" style="background:#7c3aed" onclick="downloadPdfReport()">📄 下载PDF</button> <button class="btn sm" onclick="printReport()">🖨 打印 / 保存PDF</button> <button class="btn sm" style="background:var(--ok)" onclick="downloadReport()">⬇ 下载报告</button> <button class="btn gray sm" onclick="closeReport()">关闭</button></span></div>'+
+   '<iframe id="rep-frame" style="width:100%;height:78vh;border:0;display:block" srcdoc="'+docHtml.replace(/"/g,'&quot;')+'"></iframe></div>';
+  document.body.appendChild(mv);
+}
+function closeReport(){const mv=document.getElementById('report-modal');if(mv)mv.remove()}
+function printReport(){
+  try{const f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0';
+    document.body.appendChild(f);
+    f.onload=()=>{try{f.contentWindow.focus();f.contentWindow.print();setTimeout(()=>f.remove(),1500)}
+      catch(err){toast('当前环境不支持直接打印，请用「下载报告」后打开文件打印');f.remove()}};
+    f.srcdoc=ctx.reportHtml;}
+  catch(err){toast('打印失败，请用「下载报告」后打印')}}
+function downloadReport(){
+  try{const blob=new Blob(['\ufeff'+ctx.reportHtml],{type:'text/html;charset=utf-8'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(ctx.reportName||'判卷分析报告')+'.html';
+    document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},800);
+    toast('报告已下载（.html），用浏览器打开后 Ctrl+P 可另存为 PDF');}
+  catch(err){toast('下载失败：'+err.message)}}
+/* ---- 报告导出 PDF（本地 html2canvas + jsPDF，不走 AI 接口） ---- */
+function ensurePdfLibs(cb){
+  if(window.jspdf&&window.html2canvas)return cb(true);
+  loadScript(CDN.jspdf,ok1=>{if(!ok1)return cb(false);
+    loadScript(CDN.html2,ok2=>cb(!!ok2&&!!window.jspdf&&!!window.html2canvas))})}
+function pdfFinish(title,cv){ // 长图按 A4 竖版切片，输出多页 PDF
+  const pdf=new window.jspdf.jsPDF('p','mm','a4');
+  const pw=210,ph=297;const pageHpx=Math.floor(cv.width*ph/pw);
+  let y=0,page=0;
+  while(y<cv.height&&page<60){
+    const h=Math.min(pageHpx,cv.height-y);
+    const tmp=document.createElement('canvas');tmp.width=cv.width;tmp.height=h;
+    const g=tmp.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,cv.width,h);g.drawImage(cv,0,-y);
+    if(page)pdf.addPage();
+    pdf.addImage(tmp.toDataURL('image/jpeg',0.92),'JPEG',0,0,pw,Math.min(ph,h*pw/cv.width));
+    y+=h;page++}
+  pdf.save(title+'.pdf')}
+function downloadDomPdf(title,srcEl){ // 把页面中任一报告区域（含图表画布）导出为多页 PDF
+  if(!srcEl)return toast('未找到报告内容');
+  ensurePdfLibs(ok=>{if(!ok)return toast('PDF组件加载失败，请检查网络后重试（首次使用需下载约400KB组件）');
+    toast('正在生成PDF，请稍候…');
+    const host=document.createElement('div');
+    host.style.cssText='position:fixed;left:-99999px;top:0;width:820px;background:#fff;color:#111;z-index:-1';
+    const clone=srcEl.cloneNode(true);
+    const sc=srcEl.querySelectorAll('canvas'),dc=clone.querySelectorAll('canvas');
+    for(let i=0;i<sc.length;i++){if(dc[i]){try{const img=document.createElement('img');
+      img.src=sc[i].toDataURL('image/png');img.style.width=(sc[i].clientWidth||sc[i].width)+'px';img.style.maxWidth='100%';
+      dc[i].parentNode.replaceChild(img,dc[i])}catch(err){}}}
+    host.appendChild(clone);document.body.appendChild(host);
+    window.html2canvas(host,{scale:2,backgroundColor:'#ffffff',useCORS:true}).then(cv=>{
+      pdfFinish(title,cv);if(host.parentNode)host.parentNode.removeChild(host);toast('PDF已下载：'+title+'.pdf')})
+    .catch(()=>{if(host.parentNode)host.parentNode.removeChild(host);toast('PDF生成失败，请改用页面上的其他下载方式')})})}
+function downloadHtmlBodyPdf(title,bodyHtml){ // 由报告 HTML 正文（学生个人报告）生成 PDF
+  ensurePdfLibs(ok=>{if(!ok)return toast('PDF组件加载失败，请检查网络后重试（首次使用需下载约400KB组件）');
+    toast('正在生成PDF，请稍候…');
+    const host=document.createElement('div');
+    host.style.cssText='position:fixed;left:-99999px;top:0;width:820px;background:#fff;color:#1c2434;z-index:-1';
+    host.innerHTML='<div style="padding:10px;font-family:sans-serif">'+bodyHtml+'</div>';
+    document.body.appendChild(host);
+    window.html2canvas(host,{scale:2,backgroundColor:'#ffffff'}).then(cv=>{
+      pdfFinish(title,cv);if(host.parentNode)host.parentNode.removeChild(host);toast('PDF已下载：'+title+'.pdf')})
+    .catch(()=>{if(host.parentNode)host.parentNode.removeChild(host);toast('PDF生成失败，请改用「⬇ 下载报告」HTML版')})})}
+function downloadPdfReport(){ // 学生个人报告：取报告 HTML 正文转 PDF
+  const m=(ctx.reportHtml||'').match(/<body>([\s\S]*?)<\/body>/);
+  downloadHtmlBodyPdf(ctx.reportName||'判卷分析报告',m?m[1]:'')}
+
+/* ---------------- 11. 教师端 · 学生邀请码 / 我的学生 ---------------- */
+function vInvites(){if(me.role==='teacher')return vTInvites();vAInv()}
+function vAInv(){vInvitesImpl('管理员')}
+function vTInvites(){
+  document.getElementById('view').innerHTML='<div class="card"><h3>🎫 为本班学生生成邀请码</h3>'+
+  '<div class="row" style="align-items:flex-end"><div style="flex:0 0 100px"><label>数量</label><input id="iv-n" type="number" value="1" min="1" max="50"></div>'+
+  '<button class="btn" onclick="genStuInvites()">生成学生邀请码</button><span class="small muted">学生注册时需填写：账号、密码、姓名、学号 + 本邀请码，班级自动绑定为本班</span></div></div>'+
+  '<div class="card"><h3>我发出的学生邀请码</h3><div id="iv-list"></div></div>';
+  ivListT();
+}
+function genStuInvites(){
+  const n=Math.max(1,Math.min(50,+document.getElementById('iv-n').value||1));
+  for(let i=0;i<n;i++){let code;do{code='S'+Math.random().toString(36).slice(2,6).toUpperCase()+String(Date.now()).slice(-3)}while(db.invites.some(x=>x.code===code));
+    db.invites.push({code,role:'student',schoolId:me.schoolId,gradeId:me.gradeId,classId:me.classId,createdBy:me.id,usedBy:null})}
+  save();toast('已生成 '+n+' 个学生邀请码');ivListT();
+}
+function ivListT(){
+  const list=db.invites.filter(i=>i.role==='student'&&i.classId===me.classId).slice().reverse();
+  document.getElementById('iv-list').innerHTML=htmlTable([['邀请码'],['状态'],['使用者'],[null]],
+   list.map(i=>['<b style="letter-spacing:1px">'+i.code+'</b>',i.usedBy?'<span class="tag gray">已使用</span>':'<span class="tag orange">未使用</span>',
+    i.usedBy?esc((uById(i.usedBy)||{}).name||'—'):'—',i.usedBy?'':'<button class="btn red sm" onclick="db.invites=db.invites.filter(x=>x.code!==\''+i.code+'\');save();ivListT()">作废</button>']))+
+  (list.length?'':'<div class="empty">还没有生成过邀请码</div>');
+}
+function vMyStu(){
+  const stu=students().filter(u=>u.classId===me.classId);
+  document.getElementById('view').innerHTML='<div class="card"><h3>📥 导入学生名单（Excel / Word / CSV / 粘贴文字）</h3>'+
+  '<input type="file" multiple accept=".xlsx,.docx,.csv,.txt" onchange="importFiles(\'stu\',this)">'+
+  '<textarea id="imp-paste-stu" rows="4" style="margin-top:8px" placeholder="粘贴名单：每行一名学生，支持「学号 姓名」或「姓名 学号」，逗号/空格/Tab 均可；Excel 里可直接复制整列粘贴"></textarea>'+
+  '<div class="row" style="margin-top:10px;align-items:center"><button class="btn" onclick="confirmImport(\'stu\')">解析并导入到本班</button><span id="imp-status-stu" class="small muted"></span></div>'+
+  '<p class="small muted" style="margin-top:8px">导入将自动创建学生账号：用户名=学号（无学号则自动生成），初始密码 123456；同学号/同姓名学生自动跳过。照片/扫描件暂不支持图片识字（OCR），请将名单文字复制粘贴；旧版 .doc/.xls 请另存为 .docx/.xlsx。</p></div>'+
+  '<div class="card"><h3>👥 我的学生（'+stu.length+' 人）</h3>'+
+  (stu.length?htmlTable([['姓名'],['学号'],['账号'],['历次均分',1],[null]],
+   stu.map(u=>{const exs=examsOfClass(me.schoolId,me.gradeId,me.classId);
+    const scores=exs.map(e=>e.scores[u.id]).filter(Boolean);
+    const avg=scores.length?Math.round(scores.reduce((a,s)=>a+s.total,0)/scores.length*10)/10:'—';
+    return [esc(u.name),esc(u.studentNo||'—'),esc(u.username),avg,
+     exs.length&&scores.length?'<button class="btn sm" onclick="showReport(\''+exs[exs.length-1].id+'\',\''+u.id+'\')">最新报告</button>':'']})):'<div class="empty">暂无学生，可通过上方名单导入或生成学生邀请码</div>')+'</div>';
+}
+
+/* ---------------- 名单导入（Excel/Word/CSV/粘贴） ---------------- */
+const CDN={xlsx:'https://fastly.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',mammoth:'https://fastly.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js',jspdf:'https://fastly.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',html2:'https://fastly.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
+ pdfjs:'https://fastly.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',pdfjsWorker:'https://fastly.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js',
+ tesseract:'https://fastly.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js'};
+function loadPdfText(file,cb){
+  loadScript(CDN.pdfjs,ok=>{
+    if(!ok)return cb(null);
+    try{
+      const r=new FileReader();
+      r.onload=()=>{
+        try{
+          pdfjsLib.GlobalWorkerOptions.workerSrc=CDN.pdfjsWorker;
+          pdfjsLib.getDocument({data:new Uint8Array(r.result),disableFontFace:true}).promise.then(pdf=>{
+            if(!pdf.numPages)return cb('');
+            let done=0,text='';const items=[];
+            const next=()=>{done++;
+              if(done>pdf.numPages)return cb(text,items);
+              pdf.getPage(done).then(pg=>pg.getTextContent())
+                .then(tc=>{tc.items.forEach(i=>{const s=(i.str||'').trim();if(!s)return;
+                  const tr=i.transform||[1,0,0,1,0,0];
+                  items.push({s:s.slice(0,8),x:Math.round(tr[4]),y:Math.round(tr[5]),p:done})});
+                  text+=(tc.items.map(i=>i.str).join(' '))+'\n';next()})
+                .catch(()=>next())};
+            next();
+          }).catch(()=>cb(null));
+        }catch(err){cb(null)}
+      };
+      r.onerror=()=>cb(null);
+      r.readAsArrayBuffer(file);
+    }catch(err){cb(null)}
+  });
+}
+/* ---- OCR（本地 Tesseract.js，不走 AI 接口） ---- */
+function ocrWorker(cb){
+  loadScript(CDN.tesseract,ok=>{
+    if(!ok)return cb(null);
+    try{
+      if(window.__zxOcrW)return cb(window.__zxOcrW);
+      Tesseract.createWorker('chi_sim+eng',1,{logger:()=>{}})
+        .then(w=>{window.__zxOcrW=w;cb(w)}).catch(()=>cb(null));
+    }catch(err){cb(null)}
+  });
+}
+function ocrImageSrc(src,cb){
+  ocrWorker(w=>{
+    if(!w)return cb(null);
+    w.recognize(src).then(r=>cb((r.data&&r.data.text)||'')).catch(()=>cb(null));
+  });
+}
+function ocrPdfFile(file,cb){ // 扫描版PDF：逐页渲染成图片再OCR，最多5页
+  loadScript(CDN.pdfjs,ok=>{
+    if(!ok)return cb(null);
+    readFileAs(file,'array',buf=>{
+      try{
+        pdfjsLib.GlobalWorkerOptions.workerSrc=CDN.pdfjsWorker;
+        pdfjsLib.getDocument({data:new Uint8Array(buf),disableFontFace:true}).promise.then(pdf=>{
+          if(!pdf.numPages)return cb('');
+          const n=Math.min(pdf.numPages,5);let i=0,text='';
+          const next=()=>{
+            if(i>=n)return cb(text);
+            i++;
+            pdf.getPage(i).then(pg=>{
+              const vp=pg.getViewport({scale:2});
+              const cv=document.createElement('canvas');cv.width=Math.round(vp.width);cv.height=Math.round(vp.height);
+              return pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise
+                .then(()=>ocrImageSrc(cv,t=>{text+=(t||'')+'\n';next()}));
+            }).catch(()=>next());
+          };
+          next();
+        }).catch(()=>cb(null));
+      }catch(err){cb(null)}
+    });
+  });
+}
+function loadScript(src,cb){const s=document.createElement('script');s.src=src;s.onload=()=>cb(true);s.onerror=()=>cb(false);document.head.appendChild(s)}
+function readFileAs(f,mode,cb){const r=new FileReader();r.onload=()=>cb(r.result);r.onerror=()=>cb(null);
+  if(mode==='array')r.readAsArrayBuffer(f);else r.readAsText(f)}
+function impStatus(prefix,msg){const el=document.getElementById('imp-status-'+prefix);if(el)el.innerHTML=msg}
+function collectImport(prefix,text,name){
+  const st=ctx['imp_'+prefix]||(ctx['imp_'+prefix]={lines:[]});
+  const lines=(text||'').split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  st.lines=st.lines.concat(lines);
+  impStatus(prefix,'已读取 <b>'+esc(name)+'</b>（'+lines.length+' 行），累计 '+st.lines.length+' 行，可继续添加文件，或点击下方按钮完成导入');
+}
+function importFiles(prefix,input){
+  [...input.files].forEach(f=>{
+    const ext=(f.name.toLowerCase().split('.').pop()||'');
+    if(ext==='xlsx'){
+      loadScript(CDN.xlsx,ok=>{if(!ok)return toast('表格解析库加载失败（需联网一次），请改用「粘贴文字」导入');
+        readFileAs(f,'array',buf=>{try{const wb=XLSX.read(buf,{type:'array'});let t='';
+          wb.SheetNames.forEach(n=>{XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:false}).forEach(r=>{t+=(r||[]).join('\t')+'\n'})});
+          collectImport(prefix,t,f.name)}catch(err){toast('Excel 解析失败：'+f.name)}})})}
+    else if(ext==='docx'){
+      loadScript(CDN.mammoth,ok=>{if(!ok)return toast('Word 解析库加载失败（需联网一次），请改用「粘贴文字」导入');
+        readFileAs(f,'array',buf=>{try{mammoth.extractRawText({arrayBuffer:buf}).then(r=>collectImport(prefix,r.value,f.name)).catch(()=>toast('Word 解析失败：'+f.name))}catch(err){toast('Word 解析失败：'+f.name)}})})}
+    else if(ext==='csv'||ext==='txt'){readFileAs(f,'text',t=>collectImport(prefix,t,f.name))}
+    else if(ext==='doc'||ext==='xls'||ext==='ppt'||ext==='pptx'){toast('旧版 .'+ext+' 暂不支持直接解析：请另存为 .xlsx / .docx，或复制文字粘贴导入')}
+    else if(f.type&&f.type.startsWith('image/')){toast('网页版暂不支持照片识字（OCR）：请把名单文字复制后粘贴到文本框导入')}
+    else{toast('暂不支持该文件类型：'+f.name)}
+  });
+}
+function parseRoster(text){
+  const out=[];const seen=new Set();
+  (text||'').split(/\r?\n/).forEach(line=>{line=line.trim();if(!line)return;
+    if(line.includes('学号')&&line.includes('姓名'))return;
+    const parts=line.split(/[\s,，\t;；、|]+/).filter(Boolean);
+    const no=parts.find(p=>/^\d{2,}$/.test(p))||'';
+    const nm=parts.find(p=>!/^\d+$/.test(p)&&p.length>=2&&p.length<=12&&/[一-龥a-zA-Z]/.test(p));
+    if(!nm)return;const key=no+'|'+nm;if(seen.has(key))return;seen.add(key);out.push({no,nm})});
+  return out;
+}
+function confirmImport(prefix){
+  let target;
+  if(prefix==='stu'){target={schoolId:me.schoolId,gradeId:me.gradeId,classId:me.classId}}
+  else{target=treeVal('imp');if(!target.schoolId||!target.gradeId||!target.classId)return toast('请先选择要导入的学校/年级/班级')}
+  const st=ctx['imp_'+prefix]||{lines:[]};
+  const paste=(document.getElementById('imp-paste-'+prefix).value||'');
+  const rows=parseRoster(st.lines.join('\n')+'\n'+paste);
+  if(!rows.length)return toast('未解析到有效名单（每行格式：学号 姓名 / 姓名 学号）');
+  const exist=students().filter(u=>u.classId===target.classId);
+  let added=0,skipped=0;
+  rows.forEach(r=>{
+    if(exist.some(u=>(r.no&&u.studentNo===r.no)||u.name===r.nm)){skipped++;return}
+    let un=r.no||'s'+Math.random().toString(36).slice(2,7);
+    while(db.users.some(x=>x.username===un))un=un+'2';
+    db.users.push({id:uid(),role:'student',username:un,password:'123456',name:r.nm,
+      schoolId:target.schoolId,gradeId:target.gradeId,classId:target.classId,studentNo:r.no});
+    added++;});
+  ctx['imp_'+prefix]={lines:[]};const ta=document.getElementById('imp-paste-'+prefix);if(ta)ta.value='';
+  save();toast('导入完成：新增 '+added+' 名学生，跳过 '+skipped+' 名（已存在）');
+  impStatus(prefix,added?('✓ 新增 '+added+' 人，跳过 '+skipped+' 人（同学号/同姓名已存在），初始密码 123456'):'');
+  page=prefix==='stu'?'mystu':'users';renderApp();
+}
+
+/* ---------------- 12. 学生端 ---------------- */
+function vScores(){
+  const exs=examsOfClass(me.schoolId,me.gradeId,me.classId);
+  ctx.minePdfName=me.name+' 成绩报告';
+  document.getElementById('view').innerHTML='<div class="card"><h3>🧾 我的历次成绩 <button class="btn sm" style="background:#7c3aed;float:right" onclick="downloadDomPdf(ctx.minePdfName,document.getElementById(\'view\'))">📄 下载PDF报告</button></h3>'+
+  (exs.length?htmlTable([['考试'],['日期'],['满分',1],['我的总分',1],['得分率',1],['班级排名'],[null]],
+   exs.slice().reverse().map(e=>{const a=computeExam(e);const r=a.rows.find(x=>x.u.id===me.id);
+    if(!r||r.s==null)return [esc(e.title),e.date,a.tot,'<span class="muted">未录入</span>','—','—',''];
+    const rep=studentReport(e,r);
+    return [esc(e.title),e.date,a.tot,'<b>'+r.s+'</b>',pct(rep.per)+'%',r.rank+'/'+rep.total,
+     '<button class="btn sm" onclick="showReport(\''+e.id+'\',\''+me.id+'\')">查看报告与错题解析</button>']})):'<div class="empty">暂无考试</div>')+'</div>'+
+  '<div class="card"><h3>📈 我的成绩趋势</h3><canvas id="cv-mine"></canvas></div>';
+  const rows=exs.map(e=>{const r=computeExam(e).rows.find(x=>x.u.id===me.id);return r&&r.s!=null?Math.round(r.s/computeExam(e).tot*1000)/10:null}).filter(v=>v!=null);
+  setTimeout(()=>{const cv=document.getElementById('cv-mine');if(cv)barChart(cv,exs.filter((e,i)=>rows[i]!=null).map(e=>e.title.slice(0,8)),rows.filter(v=>v!=null),{max:100,height:200,color:'#1f6feb',fmt:v=>v+'%'})},0);
+}
+
+/* ---------------- 启动 ---------------- */
+load();renderLogin();
+</script>
+</body>
+</html>
